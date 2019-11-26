@@ -67,20 +67,20 @@ class TrophiesInfo(): # Analysing trophies page
 	def __init__(self, soup):
 		self.s = soup
 
-	def Url(self):
+	def url(self):
 		return 'https://psnprofiles.com' + self.s.find('ul',{'class':'navigation'}).find('a')['href']
 
-	def Name(self):
+	def name(self):
 		return self.s.find('span', {'class':'breadcrumb-arrow'}).next_sibling
 
-	def Trophies(self):
+	def trophies(self):
 		return self.s.find('td', {'style':'padding: 10px'}).span.get_text(' ', strip=True)
 
-	def Image(self):
+	def image(self):
 		A = self.s.find('div', {'id':'first-banner'}).find('div',{'class':'img'})['style']
 		return A[A.find('(')+1 : A.find(')')]
 
-	def Comp(self): # The most complicated one since the completion is often displayed differently between games
+	def comp(self): # The most complicated one since the completion is often displayed differently between games
 		B = self.s.find('span', text='100% Completed').previous_sibling
 		
 		if self.s.find('li', {'class':'icon-sprite platinum'}).get_text() == '1':
@@ -95,7 +95,7 @@ class TrophiesInfo(): # Analysing trophies page
 		
 		if '(' in A and '(' in B:
 			A = A[A.find('(')+1 : A.find(')')]
-			B = B[b.find('(')+1 : B.find(')')]
+			B = B[B.find('(')+1 : B.find(')')]
 			return f' • {A} ({B})'
 		
 		if '(' in A and '(' not in B:
@@ -109,7 +109,7 @@ class TrophiesInfo(): # Analysing trophies page
 		else:
 			return ' • 0%' # In case no one 100%'d nor platinum'd the game
 
-	def Guide(self):
+	def guide(self):
 		try:
 			url = 'https://psnprofiles.com' + self.s.find('ul',{'class':'navigation'}).find('a')['href'].replace('trophies','guides')
 			searchsoup = BeautifulSoup(urlopen(url).read(), 'html5lib')
@@ -145,23 +145,23 @@ class PriceInfo(): # Analysing game price page
 	def title(self):
 		return self.s.find('div', {'class':'col-md-9'}).find('h1').contents[0].strip()
 	
-	def StoreUrl(self):
+	def store_url(self):
 		return self.s.find('div', {'class':'col-xs-12 col-sm-6'}).find('a')['href']
 
-	def Price(self):
+	def price(self):
 		return self.s.find('div', {'class':'col-xs-12 col-sm-6'}).find('span',{'class':'current'}).get_text(strip=True)
 
-	def PlusPrice(self):
+	def plus_price(self):
 		try:
 			A = self.A.find('div', {'class':'col-xs-12 col-sm-6'}).find('span',{'class':'plus'}).get_text(strip=True)
 			return f' ({A})'
 		except Exception:
 			return '' # In case there is no PLus Price
 	
-	def LowestPrice(soup):
+	def lowest_price(self):
 		return self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
 
-	def Image(soup):
+	def image(self):
 		return self.s.find('div', {'class':'content__game_card__cover'}).find('img')['data-src']
 
 def FindMetaSoup(game): # Utilizing Google search for best results
@@ -193,16 +193,25 @@ class MetaInfo(): # Analysing Metacritic page
 		return self.s.find('img',{'class':'product_image large_image'})['src']
 
 	def score(self):
-		return "**" + self.s.find('span',{'itemprop':'ratingValue'}).get_text(strip=True) + "**"
+		return "**" + self.s.find('a',{'class':'metascore_anchor'}).get_text(strip=True) + "**"
 
 	def critics(self):
 		return self.s.find('span',{'class':'based'}).next_element.next_element.next_element.get_text(' ', strip=True)
 
-	def quote(self):
-		return '**Best**: "'+self.s.find('li',{'class':'review critic_review first_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"\n **Worst**: "'+self.s.find('li',{'class':'review critic_review last_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
+	def best_review_author(self):
+		return 'Best Review, by '+self.s.find('li',{'class':'review critic_review first_review'}).find('div',{'class':'source'}).get_text(strip=True)
+
+	def best_review_body(self):
+		return '"'+self.s.find('li',{'class':'review critic_review first_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
+
+	def worst_review_author(self):
+		return 'Worst Review, by '+self.s.find('li',{'class':'review critic_review last_review'}).find('div',{'class':'source'}).get_text(strip=True)
+
+	def worst_review_body(self):
+		return '"'+self.s.find('li',{'class':'review critic_review last_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
 
 	def color(self):
-		X = int(self.s.find('span',{'itemprop':'ratingValue'}).get_text(strip=True))
+		X = int(self.s.find('a',{'class':'metascore_anchor'}).get_text(strip=True))
 		if X >= 75:
 			return 0x66CC33
 		if X <= 74 and X >= 50:
@@ -236,5 +245,5 @@ class HowLongInfo(): # Analysing HowLongToBeat page
 			X += str(item.find_all('h5'))+': '
 			X += '**'+str(item.find_all('div'))+'**\n'
 
-		X = BeautifulSoup(x, 'html5lib').get_text('', strip=True).replace('[','').replace(']','')
+		X = BeautifulSoup(X, 'html5lib').get_text('', strip=True).replace('[','').replace(']','')
 		return X

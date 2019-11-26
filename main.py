@@ -3,13 +3,14 @@ import discord
 import time
 import subprocess
 import datetime
+import traceback
 
 from user_data import *
 from website_data import *
 
-TOKEN = 'xxx' # DO NOT SHARE
+TOKEN = open('token.txt', 'r').read() # DO NOT SHARE
 
-P = '~'
+P = '~' # Adjustable prefix for commands
 
 client = discord.Client()
 
@@ -22,18 +23,18 @@ async def on_message(message):
 		return # Ensuring the bot won't respond to other bots
 
 	if message.content == P+'help' or message.content == P+'h':
-		embed = discord.Embed(title='Source code', url='https://gist.github.com/liav22/c587b6ba1c07b0ce8e2d64fa111642f4', colour=0x1e90ff, provider='me')
+		embed = discord.Embed(title='Source code', url='https://github.com/liav22/PSBot', colour=0x1e90ff, provider='me')
 		embed.add_field(name='General Commands:', value="""
 			Search Profile: `{p}user PSN` | Shortcut: `{p}u`
 			Search Prices: `{p}price Game` | Shortcut: `{p}p`
 			Search Trophies: `{p}trophy Game` | Shortcut: `{p}t`
 			Search Scores: `{p}meta Game` | Shortcut: `{p}m`
-			Search Length: `{p}hltb Game` | Shortcut `{p}h`""".format(p=P), inline=True)
+			Search Length: `{p}hltb Game` | Shortcut `{p}h`""".format(p=P), inline=False)
 		embed.add_field(name='User Specific Commands:', value="""
-			register Me: `{p}register PSN`
+			Registration: `{p}register PSN`
 			Show My Profile: `{p}u`
-			Remove Me: `{p}unregister`
-			My Last Platinum: `{p}mlp`""".format(p=P), inline=True)
+			Unregister: `{p}unregister`
+			My Last Platinum: `{p}mlp`""".format(p=P), inline=False)
 		embed.set_author(name='Playstation Network Bot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
 		embed.set_footer(text='© Made by Liav22')
 		await message.channel.send(embed=embed)
@@ -41,7 +42,7 @@ async def on_message(message):
 	if message.content.lower().startswith(P+'register '):
 
 		if message.guild is None:
-			await error_message(message.channel, 'Registration is only possible on servers.', 'Try using on a server where the bot is used.', '001')
+			await error_message(message.channel, 'Registration is only possible on servers.', 'Try using on a server where the bot is present.', '001')
 
 		if search_user(message.author.id, message.guild.id) == False:
 			register_new_user(message.author.id,message.content[10::], message.guild.id)
@@ -121,10 +122,12 @@ async def on_message(message):
 			await message.channel.send(embed=embed)
 
 		except AttributeError:
-			await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search for it yourself.`', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '008')
+			traceback.print_exc()
+			await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search for it yourself.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '008')
 
 		except Exception:
-			await error_message(message.channel, "Unknown Error; Google has probably blocked us, or it's currently down.", "Wait an hour and try again or inform the bot's developer.", '009')
+			traceback.print_exc()
+			await error_message(message.channel, "Unknown Error; Google has either blocked us, or it's currently down.", "Wait an hour and try again or inform the bot's developer.", '009')
 
 	if message.content.lower().startswith(P+'price ') or message.content.lower().startswith(P+'p '):
 		if message.content.lower().startswith(P+'p '):
@@ -136,15 +139,17 @@ async def on_message(message):
 			soup = FindGame(game)
 			a = PriceInfo(soup)
 			embed = discord.Embed(title='Current Price: ' + a.price() + a.plus_price(), description='Lowest Price: ' + a.lowest_price(), url=a.page_url(), colour=0x2200FF)
-			embed.set_author(name=a.title(), url=a.store_url(a), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
+			embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
 			embed.set_thumbnail(url=a.image())
 			embed.set_footer(text='by PSprices.com')
 			await message.channel.send(embed=embed)
 
 		except AttributeError:
+			traceback.print_exc()
 			await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search for it yourself.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '010')
 
 		except Exception:
+			traceback.print_exc()
 			await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
 	if message.content.lower().startswith(P+'meta ') or message.content.lower().startswith(P+'m '):
@@ -156,16 +161,20 @@ async def on_message(message):
 		try:
 			soup = FindMetaSoup(game)
 			a = MetaInfo(soup)
-			embed = discord.Embed(title='Metascore: ' + a.score() + ', by ' + a.critics(), description=a.quote(), colour=a.color())
+			embed = discord.Embed(title='Metascore: ' + a.score(),description='by ' + a.critics(), colour=a.color())
+			embed.add_field(name=a.best_review_author(), value=a.best_review_body(), inline=False)
+			embed.add_field(name=a.worst_review_author(), value=a.worst_review_body(), inline=False)
 			embed.set_author(name=a.title(), url=a.url(), icon_url='https://i.imgur.com/jpgFaHq.png')
 			embed.set_thumbnail(url=a.image())
 			embed.set_footer(text='by Metacritic.com')
 			await message.channel.send(embed=embed)
 
 		except AttributeError:
+			traceback.print_exc()
 			await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search for it yourself.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '011')
 
 		except Exception:
+			traceback.print_exc()
 			await error_message(message.channel, "Unknown Error: Google has either blocked us, or it's currently down.", "Wait an hour and try again or inform the bot's developer.", '009')
 
 	if message.content.lower().startswith(P+'hltb ') or message.content.lower().startswith(P+'h '):
@@ -184,10 +193,12 @@ async def on_message(message):
 			await message.channel.send(embed=embed)
 			
 		except AttributeError:
+			traceback.print_exc()
 			await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search for it yourself.', 'https://howlongtobeat.com/', '012')
 
 		except Exception:
-			await error_message(message.channel, "Unknown Error: Google has probably blocked us, or it's currently down.", "Wait an hour and try again or inform the bot's developer.", '009')
+			traceback.print_exc()
+			await error_message(message.channel, "Unknown Error: Google has either blocked us, or it's currently down.", "Wait an hour and try again or inform the bot's developer.", '009')
 
 @client.event
 async def error_message(channel, error, solution, code):
