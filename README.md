@@ -8,4 +8,4 @@
 * Handles errors like a boss (mostly)
 
 ## Installation
-Download ZIP, ensure you have the required packages and run Launch Bot
+Download ZIP, ensure you have the required packages and run `Launch Bot.bat`.
