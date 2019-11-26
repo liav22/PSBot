@@ -10,7 +10,7 @@
 ## Installation
 1. Download ZIP
 2. Ensure you have the required packages
-3. Paste your bot token in token.txt
+3. Paste your bot token from (Discord Developer Portal)[https://discordapp.com/developers/applications/] in token.txt
 4. Run `Launch Bot.bat`
 
 ## Usage
