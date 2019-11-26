@@ -8,12 +8,12 @@
 * Handles errors like a boss (mostly).
 
 ## Installation
-1. Download ZIP
-2. Ensure you have the required packages
-3. Paste your bot token from [Discord Developer Portal](https://discordapp.com/developers/applications/) in token.txt
-4. Run `Launch Bot.bat`
+1. Download ZIP and exctract to any folder
+2. Ensure you have the required packages (see beginning of all `.py` files)
+3. Copy your bot token from [Discord Developer Portal](https://discordapp.com/developers/applications/) and paste in token.txt
+4. Launch `main.py` using your system's console / terminal
 
 ## Usage
 * Default prefix is `~`, this can by changed by editing `main.py`.
 * Type `~help` in any Discord channel (the bot needs basic premissions) to see the command list.
-* All errors are printed to console.
+* All errors are printed to console / terminal.
