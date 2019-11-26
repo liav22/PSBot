@@ -7,7 +7,7 @@ import datetime
 from user_data import *
 from website_data import *
 
-TOKEN = 'NTQyNjc3NDgwMjk3ODU3MDM2.XU7K4g.58_z6prtMGt6pdrwlHb5_Pose4w' # DO NOT SHARE
+TOKEN = 'xxx' # DO NOT SHARE
 
 P = '~'
 
