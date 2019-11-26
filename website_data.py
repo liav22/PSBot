@@ -153,7 +153,7 @@ class PriceInfo(): # Analysing game price page
 
 	def plus_price(self):
 		try:
-			A = self.A.find('div', {'class':'col-xs-12 col-sm-6'}).find('span',{'class':'plus'}).get_text(strip=True)
+			A = self.s.find('div', {'class':'col-xs-12 col-sm-6'}).find('span',{'class':'plus'}).get_text(strip=True)
 			return f' ({A})'
 		except Exception:
 			return '' # In case there is no PLus Price
