@@ -8,4 +8,7 @@
 * Handles errors like a boss (mostly)
 
 ## Installation
-Download ZIP, ensure you have the required packages and run `Launch Bot.bat`.
+1. Download ZIP
+2. Ensure you have the required packages
+3. Paste your bot token in token.txt
+4. Run `Launch Bot.bat`.
