@@ -15,4 +15,5 @@
 
 ## Usage
 * Default prefix is `~`, this can by changed by editing `main.py`.
-* Type in `~help` to see the command list.
+* Type `~help` in any Discord channel (the bot needs basic premissions) to see the command list.
+* All errors are printed to console.
