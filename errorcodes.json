@@ -6,8 +6,8 @@ Code	Error
 005	/* The registered user's profile doesn't exist on PSNProfiles */
 006	/* An unregistered user attempted to use a command that requires registerion */
 007	/* Unknown error, requires developer attention */
-008	/* Requested game not found on PSNProfiles using a Google Search */
-009	/* Bad request from Google, possibly due to getting blocked by Google's server */
+008	/* urllib returns bad request; possibly due to getting blocked by Google, or due to a server failure */
+009	/* Requested game not found on PSNProfiles using a Google Search */
 010	/* Requested game not found on on PSPrices using the site's integrated search */
 011	/* Requested game not found on Metacritic using a Google Search */
 012	/* Requested game not found on HowLongToBeat using a Google Search */

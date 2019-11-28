@@ -9,7 +9,13 @@ from googlesearch import search
 
 AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
 
-def GetUserSoup(url): # Getting user profile page
+def get_web_page_google(site, game):
+	query = site+game
+	for result in search(query, tld='com', lang='en', num=1, start=0, stop=1, pause=1):
+		r = Request(result, headers={'User-Agent': AGENT})
+		return BeautifulSoup(urlopen(r).read(), 'html5lib')
+
+def get_psn_profile_page(url): # Getting user profile page
 	r = Request(url, headers={'User-Agent': AGENT})
 	return BeautifulSoup(urlopen(r).read(), 'html5lib')
 
@@ -56,11 +62,6 @@ class PlatinumInfo():
 
 	def rarity(self):
 		return self.s.find('tr',{'class':'platinum'}).find('span',{'title':'Platinum Rarity'}).get_text(' ', strip=True)
-
-def GetTrophiesSoup(game): # Utilizing Google search for best results
-	query = f'{game} Trophies • PSNProfiles.com'
-	for result in search(query, tld='com', lang='en', num=1, start=0, stop=1, pause=1):
-		return BeautifulSoup(urlopen(result).read(), 'html5lib')
 
 class TrophiesInfo(): # Analysing trophies page
 
@@ -123,16 +124,16 @@ class TrophiesInfo(): # Analysing trophies page
 		except Exception:
 			return '' # In case there is no guide
 
-def FindGame(game): # Getting game price page
-	url = 'https://psprices.com/region-us/search/?q={}&platform=PS4&dlc=hide'.format(game.replace(' ','+'))
-	r = Request(url, headers={'User-Agent': AGENT})
-	page = BeautifulSoup(urlopen(r).read(), 'html5lib')
-	if page.find('div', {'class':'content__cat__pre_title'}) != None:
-		result = 'https://psprices.com'+page.find('div',{'class':'col-md-2 col-sm-3 col-xs-6'}).a['href']
-		r2 = Request(result, headers={'User-Agent': AGENT})
-		return BeautifulSoup(urlopen(r2).read(), 'html5lib')
-	else:
-		return page
+###	SEARCH THROUGH PSPRICES DIRECTLY:
+#	url = 'https://psprices.com/region-us/search/?q={}&platform=PS4&dlc=hide'.format(game.replace(' ','+'))
+#	r = Request(url, headers={'User-Agent': AGENT})
+#	page = BeautifulSoup(urlopen(r).read(), 'html5lib')
+#	if page.find('div', {'class':'content__cat__pre_title'}) != None:
+#		result = 'https://psprices.com'+page.find('div',{'class':'col-md-2 col-sm-3 col-xs-6'}).a['href']
+#		r2 = Request(result, headers={'User-Agent': AGENT})
+#		return BeautifulSoup(urlopen(r2).read(), 'html5lib')
+#	else:
+#		return page
 
 class PriceInfo(): # Analysing game price page
 
@@ -163,12 +164,6 @@ class PriceInfo(): # Analysing game price page
 
 	def image(self):
 		return self.s.find('div', {'class':'content__game_card__cover'}).find('img')['data-src']
-
-def FindMetaSoup(game): # Utilizing Google search for best results
-	query = 'site:metacritic.com/game {}'.format(game.replace(' ','+'))
-	for result in search(query, tld='com', lang='en', num=1, start=0, stop=1, pause=1):
-		r = Request(result, headers={'User-Agent': AGENT})
-		return BeautifulSoup(urlopen(r).read(), 'html5lib')
 
 ###	SEARCH THROUGH METACRITIC DIRECTLY:
 #	url = 'https://www.metacritic.com/search/game/{}/results'.format(game.replace(' ','+'))
@@ -218,12 +213,6 @@ class MetaInfo(): # Analysing Metacritic page
 			return 0xffcc33
 		if X <= 49:
 			return 0xFF0000
-
-def HowLongSoup(game): # Utilizing Google search for best results
-	query = 'site:howlongtobeat.com {}'.format(game.replace(' ','+'))
-	for result in search(query, tld='com', lang='en', num=1, start=0, stop=1, pause=1):
-		r = Request(result, headers={'User-Agent': AGENT})
-		return BeautifulSoup(urlopen(r).read(), 'html5lib')
 
 class HowLongInfo(): # Analysing HowLongToBeat page
 
