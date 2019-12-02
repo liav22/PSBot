@@ -113,7 +113,7 @@ async def on_message(message):
 		if message.content.lower().startswith(P+'trophy '):
 			game = message.content[8::]
 		try:
-			soup = get_web_page_google('site:psnprofiles.com ', game)
+			soup = get_web_page_google('• PSNProfiles.com ', game)
 			a = TrophiesInfo(soup)
 			embed = discord.Embed(title=a.trophies()+a.comp(), description=a.guide(), colour=0x4BA0FF)
 			embed.set_author(name=a.name(), url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/logo-round-160px.png')
