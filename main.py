@@ -227,9 +227,16 @@ async def error_message_with_url(channel, error, solution, url, code):
 
 @client.event
 async def on_ready():
-	await client.change_presence(activity=discord.Game(name="2.0 Now live", type=0))
+	await client.change_presence(activity=discord.Game(name="Use ~help", type=0))
 	print('Logged in as {0.user}'.format(client))
 	print(client.user.id)
 	print('------')
 
-client.run(TOKEN)
+while True:
+	try:
+		client.loop.run_until_complete(client.start(TOKEN))
+
+	except BaseException:
+		print(f'[{datetime.datetime.now()}] Login failed, attempting to reconnect in 60 seconds...\n')
+		time.sleep(60)
+		continue
