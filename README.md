@@ -13,9 +13,9 @@
 2. Ensure you have Pyhon 3.7.1 and the required packages (see beginning of all `*.py` files)
 3. Edit `config.ini` with the following:
 
-⋅⋅⋅* Bot token - copy from [Discord Developer Portal](https://discordapp.com/developers/applications/)
-⋅⋅⋅* Prefix - my personal pick is `~` but you can change it to your liking
-⋅⋅⋅* Status - text message that the bot will show next to a "Playing" tag
+⋅⋅⋅ * Bot token - copy from [Discord Developer Portal](https://discordapp.com/developers/applications/)
+⋅⋅⋅ * Prefix - my personal pick is `~` but you can change it to your liking
+⋅⋅⋅ * Status - text message that the bot will show next to a "Playing" tag
 
 4. Launch `main.py` with Python 3.7.1 using your system's console / terminal
 
