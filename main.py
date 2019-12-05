@@ -1,18 +1,19 @@
 import asyncio
 import discord
 import time
-import subprocess
 import datetime
 import traceback
 
-from user_data import *
-from website_data import *
-
-TOKEN = open('token.txt', 'r').read() # DO NOT SHARE
-
-P = '~' # Adjustable prefix for commands
+from config import *
+from user import *
+from website import *
 
 client = discord.Client()
+
+config = Config()
+P = config.prefix
+TOKEN = config.token
+STATUS = config.status
 
 @client.event
 async def on_message(message):
@@ -113,7 +114,7 @@ async def on_message(message):
 		if message.content.lower().startswith(P+'trophy '):
 			game = message.content[8::]
 		try:
-			soup = get_web_page_google('• PSNProfiles.com ', game)
+			soup = get_web_page_google(game, ' Trophies • PSNProfiles.com')
 			a = TrophiesInfo(soup)
 			embed = discord.Embed(title=a.trophies()+a.comp(), description=a.guide(), colour=0x4BA0FF)
 			embed.set_author(name=a.name(), url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/logo-round-160px.png')
@@ -227,7 +228,7 @@ async def error_message_with_url(channel, error, solution, url, code):
 
 @client.event
 async def on_ready():
-	await client.change_presence(activity=discord.Game(name="Use ~help", type=0))
+	await client.change_presence(activity=discord.Game(name=STATUS, type=0))
 	print('Logged in as {0.user}'.format(client))
 	print(client.user.id)
 	print('------')
