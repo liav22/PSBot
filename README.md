@@ -8,7 +8,7 @@
 * Allows users to register and become recognized by the bot.
 * Handles errors like a boss (mostly).
 
-## Installation
+## Initialization
 1. [Download latest ZIP](https://github.com/liav22/PSBot/archive/master.zip) and exctract to any folder
 2. Ensure you have Pyhon 3.7.1 and the required packages (see beginning of all `*.py` files)
 3. Edit `config.ini` with the following:
