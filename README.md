@@ -16,6 +16,7 @@
    * Prefix - default is `~` but you can change it to whatever you like
    * Status - text message that the bot will show next to a "Playing" tag (default is "Use ~help")
 4. Launch `main.py` with Python 3.7.1 using your system's console / terminal
+5. Add bot to your server of choice by generating a OAuth2 URL from Discord Developer Portal with the "bot" option checked and open it in your browser.
 
 ## Usage
 * Type `help` (with set prefix) in any Discord channel (the bot needs basic premissions) to see the command list.
