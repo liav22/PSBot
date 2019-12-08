@@ -10,17 +10,19 @@ from googlesearch import search
 AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
 
 def get_web_page_google(*argv):
+    """Gerneral Google search with whatever arguments"""
     query = str(argv)
     for result in search(query, tld='com', lang='en', num=1, start=0, stop=1, pause=1):
         r = Request(result, headers={'User-Agent': AGENT})
         return BeautifulSoup(urlopen(r).read(), 'html5lib')
 
-def get_psn_profile_page(url): # Getting user profile page
+def get_psn_profile_page(url):
+    """Getting user profile page"""
     r = Request(url, headers={'User-Agent': AGENT})
     return BeautifulSoup(urlopen(r).read(), 'html5lib')
 
-class UserInfo(): # Analysing user profile
-
+class UserInfo():
+    """Analysing user profile"""
     def __init__(self, soup):
         self.s = soup
 
@@ -41,7 +43,7 @@ class UserInfo(): # Analysing user profile
             return # In case there is no description
 
 class PlatinumInfo():
-
+    """Analysing profile page"""
     def __init__(self, soup):
         self.s = soup
 
@@ -63,8 +65,8 @@ class PlatinumInfo():
     def rarity(self):
         return self.s.find('tr',{'class':'platinum'}).find('span',{'title':'Platinum Rarity'}).get_text(' ', strip=True)
 
-class TrophiesInfo(): # Analysing trophies page
-
+class TrophiesInfo():
+    """Analysing trophies page"""
     def __init__(self, soup):
         self.s = soup
 
@@ -124,19 +126,19 @@ class TrophiesInfo(): # Analysing trophies page
         except Exception:
             return '' # In case there is no guide
 
-###    SEARCH THROUGH PSPRICES DIRECTLY:
-#    url = 'https://psprices.com/region-us/search/?q={}&platform=PS4&dlc=hide'.format(game.replace(' ','+'))
-#    r = Request(url, headers={'User-Agent': AGENT})
-#    page = BeautifulSoup(urlopen(r).read(), 'html5lib')
-#    if page.find('div', {'class':'content__cat__pre_title'}) != None:
-#        result = 'https://psprices.com'+page.find('div',{'class':'col-md-2 col-sm-3 col-xs-6'}).a['href']
-#        r2 = Request(result, headers={'User-Agent': AGENT})
-#        return BeautifulSoup(urlopen(r2).read(), 'html5lib')
-#    else:
-#        return page
+"""    SEARCH THROUGH PSPRICES DIRECTLY:
+    url = 'https://psprices.com/region-us/search/?q={}&platform=PS4&dlc=hide'.format(game.replace(' ','+'))
+    r = Request(url, headers={'User-Agent': AGENT})
+    page = BeautifulSoup(urlopen(r).read(), 'html5lib')
+    if page.find('div', {'class':'content__cat__pre_title'}) != None:
+        result = 'https://psprices.com'+page.find('div',{'class':'col-md-2 col-sm-3 col-xs-6'}).a['href']
+        r2 = Request(result, headers={'User-Agent': AGENT})
+        return BeautifulSoup(urlopen(r2).read(), 'html5lib')
+    else:
+        return page"""
 
-class PriceInfo(): # Analysing game price page
-
+class PriceInfo():
+    """Analysing game price page"""
     def __init__(self, soup):
         self.s = soup
     
@@ -165,16 +167,16 @@ class PriceInfo(): # Analysing game price page
     def image(self):
         return self.s.find('div', {'class':'content__game_card__cover'}).find('img')['data-src']
 
-###    SEARCH THROUGH METACRITIC DIRECTLY:
-#    url = 'https://www.metacritic.com/search/game/{}/results'.format(game.replace(' ','+'))
-#    r = Request(url, headers={'User-Agent': AGENT})
-#    page = BeautifulSoup(urlopen(r).read(), 'html5lib')
-#    result = 'https://www.metacritic.com'+page.find('h3',{'class': 'product_title basic_stat'}).a['href']
-#    r2 = Request(result, headers={'User-Agent': AGENT})
-#    return BeautifulSoup(urlopen(r2).read(), 'html5lib')
+"""    SEARCH THROUGH METACRITIC DIRECTLY:
+    url = 'https://www.metacritic.com/search/game/{}/results'.format(game.replace(' ','+'))
+    r = Request(url, headers={'User-Agent': AGENT})
+    page = BeautifulSoup(urlopen(r).read(), 'html5lib')
+    result = 'https://www.metacritic.com'+page.find('h3',{'class': 'product_title basic_stat'}).a['href']
+    r2 = Request(result, headers={'User-Agent': AGENT})
+    return BeautifulSoup(urlopen(r2).read(), 'html5lib')"""
 
-class MetaInfo(): # Analysing Metacritic page
-
+class MetaInfo():
+    """Analysing Metacritic page"""
     def __init__(self, soup):
         self.s = soup
 
@@ -214,8 +216,8 @@ class MetaInfo(): # Analysing Metacritic page
         if X <= 49:
             return 0xFF0000
 
-class HowLongInfo(): # Analysing HowLongToBeat page
-
+class HowLongInfo():
+    """Analysing HowLongToBeat page"""
     def __init__(self, soup):
         self.s = soup
 
