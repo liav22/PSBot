@@ -102,13 +102,18 @@ async def on_message(message):
         if message.content.lower().startswith(P+'user '):
             url = 'https://psnprofiles.com/' + message.content[6::]
         soup = get_psn_profile_page(url)
-        a = UserInfo(soup)
-        embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
-        embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
-        embed.set_image(url=a.card())
-        embed.set_footer(text='by PSNProfiles.com')
-        await message.channel.send(embed=embed)
 
+        try:
+            a = UserInfo(soup)
+            embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
+            embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
+            embed.set_image(url=a.card())
+            embed.set_footer(text='by PSNProfiles.com')
+            await message.channel.send(embed=embed)
+
+        except AttributeError:
+            traceback.print_exc()
+            await error_message(message.channel, 'User not found on PSNProfiles.', 'Check if you typed the name correctly.', '005')
 
     if message.content.lower().startswith(P+'trophy ') or message.content.lower().startswith(P+'t '):
         if message.content.lower().startswith(P+'t '):
@@ -117,6 +122,9 @@ async def on_message(message):
             game = message.content[8::]
         try:
             soup = get_web_page_google(game, ' Trophies • PSNProfiles.com')
+            if soup == None:
+                raise NoResultsFound(game)
+
             a = TrophiesInfo(soup)
             embed = discord.Embed(title=a.trophies()+a.comp(), description=a.guide(), colour=0x4BA0FF)
             embed.set_author(name=a.name(), url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/logo-round-160px.png')
@@ -124,15 +132,14 @@ async def on_message(message):
             embed.set_footer(text='by PSNProfiles.com')
             await message.channel.send(embed=embed)
 
-        except AttributeError:
-            traceback.print_exc()
+        except NoResultsFound:
             await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '009')
 
         except urllib.error.HTTPError:
             traceback.print_exc()
             await error_message_with_url(message.channel, 'Google or PSNProfiles are not cooperating.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '008')
 
-        except Exception:
+        except AttributeError:
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
@@ -144,6 +151,9 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:psprices.com ps4 ', game)
+            if soup == None:
+                raise NoResultsFound(game)
+
             a = PriceInfo(soup)
             embed = discord.Embed(title='Current Price: ' + a.price() + a.plus_price(), description='Lowest Price: ' + a.lowest_price(), url=a.page_url(), colour=0x2200FF)
             embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
@@ -151,15 +161,14 @@ async def on_message(message):
             embed.set_footer(text='by PSprices.com')
             await message.channel.send(embed=embed)
 
-        except AttributeError:
-            traceback.print_exc()
-            await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '010')
+        except NoResultsFound:
+            await error_message_with_url(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '010')
 
         except urllib.error.HTTPError:
             traceback.print_exc()
             await error_message_with_url(message.channel, 'Google or PSPrices are not cooperating.', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '008')
 
-        except Exception:
+        except AttributeError:
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
@@ -171,6 +180,9 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:metacritic.com/game ', game)
+            if soup == None:
+                raise NoResultsFound(game)
+
             a = MetaInfo(soup)
             embed = discord.Embed(title='Metascore: ' + a.score(),description='by ' + a.critics(), colour=a.color())
             embed.add_field(name=a.best_review_author(), value=a.best_review_body(), inline=False)
@@ -180,15 +192,14 @@ async def on_message(message):
             embed.set_footer(text='by Metacritic.com')
             await message.channel.send(embed=embed)
 
-        except AttributeError:
-            traceback.print_exc()
+        except NoResultsFound:
             await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '011')
 
         except urllib.error.HTTPError:
             traceback.print_exc()
             await error_message_with_url(message.channel, 'Google or Metacritic are not cooperating.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '008')
 
-        except Exception:
+        except AttributeError:
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
@@ -200,20 +211,26 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:howlongtobeat.com ', game)
+            if soup == None:
+                raise NoResultsFound(game)
+
             a = HowLongInfo(soup)
             embed = discord.Embed(description=a.times(), colour=0x328ED)
             embed.set_author(name=a.title(), url=a.url(), icon_url='https://i.imgur.com/WjDVkDF.jpg')
             embed.set_thumbnail(url=a.image())
             embed.set_footer(text='by HowLongToBeat.com')
             await message.channel.send(embed=embed)
-            
-        except AttributeError:
-            traceback.print_exc()
+
+        except NoResultsFound:
             await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', 'https://howlongtobeat.com/', '012')
 
-        except Exception:
+        except urllib.error.HTTPError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error: Google has either blocked us, or it's currently down.", "Wait an hour and try again or inform the bot's developer.", '008')
+            await error_message_with_url(message.channel, 'Google or HowLongToBeat are not cooperating.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '008')
+
+        except AttributeError:
+            traceback.print_exc()
+            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '008')
 
 @client.event
 async def error_message(channel, error, solution, code):

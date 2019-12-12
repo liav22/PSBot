@@ -1,20 +1,24 @@
 import string
-import urllib
 import random
 import re
 
-from bs4 import BeautifulSoup
+import urllib
 from urllib.request import urlopen, Request
+
+from bs4 import BeautifulSoup
 from googlesearch import search
 
 AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+
+class NoResultsFound(Exception):
+    pass
 
 def get_web_page_google(*argv):
     """Gerneral Google search with whatever arguments"""
     query = str(argv)
     for result in search(query, tld='com', lang='en', num=1, start=0, stop=1, pause=1):
-        r = Request(result, headers={'User-Agent': AGENT})
-        return BeautifulSoup(urlopen(r).read(), 'html5lib')
+        request = Request(result, headers={'User-Agent': AGENT})
+        return BeautifulSoup(urlopen(request).read(), 'html5lib')
 
 def get_psn_profile_page(url):
     """Getting user profile page"""
@@ -179,6 +183,9 @@ class MetaInfo():
     """Analysing Metacritic page"""
     def __init__(self, soup):
         self.s = soup
+
+    def chech_result(self):
+        return type(self.s)
 
     def title(self):
         return self.s.find('div',{'class':'product_title'}).h1.get_text(strip=True)
