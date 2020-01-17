@@ -20,7 +20,7 @@ def get_web_page_google(*argv):
         request = Request(result, headers={'User-Agent': AGENT})
         return BeautifulSoup(urlopen(request).read(), 'html5lib')
 
-def get_psn_profile_page(url):
+def get_any_webpage(url):
     """Getting user profile page"""
     r = Request(url, headers={'User-Agent': AGENT})
     return BeautifulSoup(urlopen(r).read(), 'html5lib')
@@ -48,26 +48,31 @@ class UserInfo():
 
 class PlatinumInfo():
     """Analysing profile page"""
-    def __init__(self, soup):
+    def __init__(self, soup, game):
         self.s = soup
+        self.u = soup.find('div', {'class':'ellipsis'}).get_text(strip=True)
+
+        for item in self.s.find_all('tr',{'class':'platinum'}):
+            if str(item.find('a',{'class':'title'}).get_text(' ', strip=True)) == game:
+                self.s = item
 
     def name(self):
-        return self.s.find('div', {'class':'ellipsis'}).get_text(strip=True)
+        return self.u
 
     def game(self):
-        return self.s.find('tr',{'class':'platinum'}).find('a',{'class':'title'}).get_text(' ', strip=True)
+        return self.s.find('a',{'class':'title'}).get_text(' ', strip=True)
     
     def image(self):
-        return self.s.find('tr',{'class':'platinum'}).img['src']
+        return self.s.img['src']
 
     def description(self):
-        L1 = self.s.find('tr',{'class':'platinum'}).find_all('div',{'class':'small-info'})[0].get_text(' ', strip=True) + '\n'
-        L2 = self.s.find('tr',{'class':'platinum'}).find_all('div',{'class':'small-info'})[1].get_text(' ', strip=True)
+        L1 = self.s.find_all('div',{'class':'small-info'})[0].get_text(' ', strip=True) + '\n'
+        L2 = self.s.find_all('div',{'class':'small-info'})[1].get_text(' ', strip=True)
         L2 = re.sub(r'\s+', ' ', L2)
         return L1+L2
 
     def rarity(self):
-        return self.s.find('tr',{'class':'platinum'}).find('span',{'title':'Platinum Rarity'}).get_text(' ', strip=True)
+        return self.s.find('span',{'title':'Platinum Rarity'}).get_text(' ', strip=True)
 
 class TrophiesInfo():
     """Analysing trophies page"""

@@ -17,3 +17,4 @@ class Config():
         self.token: str = config.get('DEFAULT', 'token')
         self.prefix: str = config.get('DEFAULT', 'prefix')
         self.status: str = config.get('DEFAULT', 'status')
+        self.owner: str = config.get('DEFAULT', 'owner')

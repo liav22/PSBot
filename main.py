@@ -5,6 +5,7 @@ import discord
 import time
 import datetime
 import traceback
+import os
 
 from config import *
 from user import *
@@ -14,8 +15,6 @@ client = discord.Client()
 
 config = Config()
 P = config.prefix
-TOKEN = config.token
-STATUS = config.status
 
 @client.event
 async def on_message(message):
@@ -25,7 +24,7 @@ async def on_message(message):
     if message.author.bot:
         return # Ensuring the bot won't respond to other bots
 
-    if message.content == P+'help' or message.content == P+'h':
+    if message.content.lower() == P+'help' or message.content.lower() == P+'h':
         embed = discord.Embed(title='Source code', url='https://github.com/liav22/PSBot', colour=0x1e90ff, provider='me')
         embed.add_field(name='General Commands:', value="""
             Search Profile: `{p}user PSN` | Shortcut: `{p}u`
@@ -68,7 +67,7 @@ async def on_message(message):
         if search_user(message.author.id, message.guild.id) == True:
             try:
                 url = 'https://psnprofiles.com/' + lookup_user(message.author.id, message.guild.id)
-                soup = get_psn_profile_page(url)
+                soup = get_any_webpage(url)
                 a = UserInfo(soup)
                 embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
                 embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
@@ -83,25 +82,38 @@ async def on_message(message):
             await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
 
     if message.content.lower() == (P+'mlp') or message.content.lower() == (P+'mylastplatinum'):
-        if search_user(message.author.id, message.guild.id) == True:
-            url = 'https://psnprofiles.com/' + lookup_user(message.author.id, message.guild.id)
-            soup = get_psn_profile_page(url)
-            a = PlatinumInfo(soup)
-            embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
-            embed.set_author(name=a.name() + "'s last Platinum Trophy", url=url, icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
-            embed.set_thumbnail(url=a.image())
-            embed.set_footer(text='by PSNProfiles.com')
-            await message.channel.send(embed=embed)
+        try:
+            if search_user(message.author.id, message.guild.id) == True:
+                user = lookup_user(message.author.id, message.guild.id)
+                url_temp = f'https://psnprofiles.com/{user}/log?type=platinum'
+                soup_temp = get_any_webpage(url_temp)
+                game = soup_temp.find('img', {'class':'game'})['title']
+                url = f'https://psnprofiles.com/{user}'
+                soup = get_any_webpage(url)
 
-        else:
-            await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+                a = PlatinumInfo(soup, game)
+                embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
+                embed.set_author(name=a.name() + "'s last Platinum Trophy", url=url, icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
+                embed.set_thumbnail(url=a.image())
+                embed.set_footer(text='by PSNProfiles.com')
+                await message.channel.send(embed=embed)
+
+            if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
+                await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', '000')
+
+            elif search_user(message.author.id, message.guild.id) == False:
+                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+
+        except AttributeError:
+            traceback.print_exc()
+            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
     if message.content.lower().startswith(P+'u ') or message.content.lower().startswith(P+'user '):
         if message.content.lower().startswith(P+'u '):
             url = 'https://psnprofiles.com/' + message.content[3::]
         if message.content.lower().startswith(P+'user '):
             url = 'https://psnprofiles.com/' + message.content[6::]
-        soup = get_psn_profile_page(url)
+        soup = get_any_webpage(url)
 
         try:
             a = UserInfo(soup)
@@ -122,7 +134,7 @@ async def on_message(message):
             game = message.content[8::]
         try:
             soup = get_web_page_google(game, ' Trophies • PSNProfiles.com')
-            if soup == None:
+            if 'Trophy List' not in str(soup.find('meta', {'name':'Description'})):
                 raise NoResultsFound(game)
 
             a = TrophiesInfo(soup)
@@ -133,6 +145,7 @@ async def on_message(message):
             await message.channel.send(embed=embed)
 
         except NoResultsFound:
+            print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '009')
 
         except urllib.error.HTTPError:
@@ -151,7 +164,7 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:psprices.com ps4 ', game)
-            if soup == None:
+            if 'Price change history' in str(soup.find('div', {'id':'price_history'})):
                 raise NoResultsFound(game)
 
             a = PriceInfo(soup)
@@ -162,6 +175,7 @@ async def on_message(message):
             await message.channel.send(embed=embed)
 
         except NoResultsFound:
+            print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '010')
 
         except urllib.error.HTTPError:
@@ -180,7 +194,7 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:metacritic.com/game ', game)
-            if soup == None:
+            if 'Critic Reviews' not in str(soup.find('div', {'class':'content_nav'}).a):
                 raise NoResultsFound(game)
 
             a = MetaInfo(soup)
@@ -193,6 +207,7 @@ async def on_message(message):
             await message.channel.send(embed=embed)
 
         except NoResultsFound:
+            print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '011')
 
         except urllib.error.HTTPError:
@@ -211,7 +226,7 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:howlongtobeat.com ', game)
-            if soup == None:
+            if 'How long is' not in str(soup.title):
                 raise NoResultsFound(game)
 
             a = HowLongInfo(soup)
@@ -222,6 +237,7 @@ async def on_message(message):
             await message.channel.send(embed=embed)
 
         except NoResultsFound:
+            print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', 'https://howlongtobeat.com/', '012')
 
         except urllib.error.HTTPError:
@@ -230,7 +246,11 @@ async def on_message(message):
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '008')
+            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+
+    if message.content.lower() == P+'restart' and message.author.id == int(config.owner):
+        print(f'[{datetime.datetime.now()}] Initiating full restart as requested by bot owner...\n')
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
 @client.event
 async def error_message(channel, error, solution, code):
@@ -247,18 +267,19 @@ async def error_message_with_url(channel, error, solution, url, code):
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Game(name=STATUS, type=0))
+    await client.change_presence(activity=discord.Game(name=config.status, type=0))
     print('Logged in as {0.user}'.format(client))
     print(client.user.id)
     print('------')
 
-
 if __name__ == "__main__":
     while True:
         try:
-            client.loop.run_until_complete(client.start(TOKEN))
+            """Since discord.py 1.0, this should also be able to handle connetion interruptions and automatically reconnect"""
+            client.loop.run_until_complete(client.start(config.token))
 
         except BaseException:
+            """In case there's no connection upon initial launch"""
             print(f'[{datetime.datetime.now()}] Login failed, attempting to reconnect in 60 seconds...\n')
             time.sleep(60)
             continue
