@@ -87,6 +87,10 @@ async def on_message(message):
                 user = lookup_user(message.author.id, message.guild.id)
                 url_temp = f'https://psnprofiles.com/{user}/log?type=platinum'
                 soup_temp = get_any_webpage(url_temp)
+
+                if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
+                    await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', '000')
+
                 game = soup_temp.find('img', {'class':'game'})['title']
                 url = f'https://psnprofiles.com/{user}'
                 soup = get_any_webpage(url)
@@ -97,9 +101,6 @@ async def on_message(message):
                 embed.set_thumbnail(url=a.image())
                 embed.set_footer(text='by PSNProfiles.com')
                 await message.channel.send(embed=embed)
-
-            if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
-                await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', '000')
 
             elif search_user(message.author.id, message.guild.id) == False:
                 await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
@@ -132,8 +133,13 @@ async def on_message(message):
             game = message.content[3::]
         if message.content.lower().startswith(P+'trophy '):
             game = message.content[8::]
+
         try:
             soup = get_web_page_google(game, ' Trophies • PSNProfiles.com')
+
+            if soup == None:
+                raise NoResultsFound(game)
+
             if 'Trophy List' not in str(soup.find('meta', {'name':'Description'})):
                 raise NoResultsFound(game)
 
@@ -164,7 +170,11 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:psprices.com ps4 ', game)
-            if 'Price change history' in str(soup.find('div', {'id':'price_history'})):
+
+            if soup == None:
+                raise NoResultsFound(game)
+
+            if 'Price change history' not in str(soup.find('div', {'id':'price_history'})):
                 raise NoResultsFound(game)
 
             a = PriceInfo(soup)
@@ -194,6 +204,10 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:metacritic.com/game ', game)
+
+            if soup == None:
+                raise NoResultsFound(game)
+
             if 'Critic Reviews' not in str(soup.find('div', {'class':'content_nav'}).a):
                 raise NoResultsFound(game)
 
@@ -226,6 +240,10 @@ async def on_message(message):
 
         try:
             soup = get_web_page_google('site:howlongtobeat.com ', game)
+
+            if soup == None:
+                raise NoResultsFound(game)
+
             if 'How long is' not in str(soup.title):
                 raise NoResultsFound(game)
 
