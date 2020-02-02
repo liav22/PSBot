@@ -21,5 +21,5 @@
 
 ## Usage
 * Type `help` (with set prefix) in any Discord channel (the bot needs basic premissions) to see the command list.
-* All errors are printed to console / terminal.
+* Any unknown error (should only be AttributeError) will be printed to console / terminal.
 * User data is stored locally on `*.CSV` files in `userdata/`.
