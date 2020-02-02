@@ -122,18 +122,13 @@ class TrophiesInfo():
             return ' • 0%' # In case no one 100%'d nor platinum'd the game
 
     def guide(self):
-        try:
-            url = 'https://psnprofiles.com' + self.s.find('ul',{'class':'navigation'}).find('a')['href'].replace('trophies','guides')
-            searchsoup = BeautifulSoup(urlopen(url).read(), 'html5lib')
-            url2 = 'https://psnprofiles.com'+searchsoup.find('div',{'class':'guide-page-info'}).find('a')['href']
-            guidesoup = BeautifulSoup(urlopen(url2).read(), 'html5lib')
-            dif = guidesoup.find('div',{'class':'overview-info'}).find_all('span')[0].get_text(' ', strip=True)
-            plays = guidesoup.find('div',{'class':'overview-info'}).find_all('span')[3].get_text(' ', strip=True)
-            hours = guidesoup.find('div',{'class':'overview-info'}).find_all('span')[6].get_text(' ', strip=True)
-            return dif + ' | ' + plays + ' | ' + hours
-            
-        except Exception:
+        if self.s.find('div', {'class':'guide-page-info sm'}) == None:
             return '' # In case there is no guide
+        
+        url = 'https://psnprofiles.com' + self.s.find('div', {'class':'guide-page-info sm'}).a['href']
+        guidesoup = BeautifulSoup(urlopen(url).read(), 'html5lib')
+        X = guidesoup.find('div', {'class':'overview-info'}).find_all('span', {'class':'tag'})
+        return f"{X[0].get_text(' ', strip=True)} | {X[1].get_text(' ', strip=True)} | {X[2].get_text(' ', strip=True)}"
 
 """    SEARCH THROUGH PSPRICES DIRECTLY:
     url = 'https://psprices.com/region-us/search/?q={}&platform=PS4&dlc=hide'.format(game.replace(' ','+'))

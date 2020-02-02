@@ -25,7 +25,7 @@ async def on_message(message):
         return # Ensuring the bot won't respond to other bots
 
     if message.content.lower() == P+'help' or message.content.lower() == P+'h':
-        embed = discord.Embed(title='Source code', url='https://github.com/liav22/PSBot', colour=0x1e90ff, provider='me')
+        embed = discord.Embed(title='Source code', url='https://github.com/liav22/PSBot', colour=0x1e90ff)
         embed.add_field(name='General Commands:', value="""
             Search Profile: `{p}user PSN` | Shortcut: `{p}u`
             Search Prices: `{p}price Game` | Shortcut: `{p}p`
