@@ -51,10 +51,16 @@ class PlatinumInfo():
     def __init__(self, soup, game):
         self.s = soup
         self.u = soup.find('div', {'class':'ellipsis'}).get_text(strip=True)
+        self.c = False
 
         for item in self.s.find_all('tr',{'class':'platinum'}):
             if str(item.find('a',{'class':'title'}).get_text(' ', strip=True)) == game:
                 self.s = item
+
+        if self.s.find('span',{'title':'Completion Rate'}) != None:
+            if self.s.find('span',{'title':'Completion Rate'})['class'][1] == 'earned':
+                self.c = True
+
 
     def name(self):
         return self.u
@@ -65,14 +71,26 @@ class PlatinumInfo():
     def image(self):
         return self.s.img['src']
 
+    def url(self):
+        return 'https://psnprofiles.com'+self.s.find('a',{'class':'title'})['href']
+
     def description(self):
-        L1 = self.s.find_all('div',{'class':'small-info'})[0].get_text(' ', strip=True) + '\n'
+        L1 = self.s.find_all('div',{'class':'small-info'})[0].get_text(' ', strip=True)
         L2 = self.s.find_all('div',{'class':'small-info'})[1].get_text(' ', strip=True)
         L2 = re.sub(r'\s+', ' ', L2)
-        return L1+L2
+
+        if self.c == True:
+            return L1+', Platinum and 100% completion!\n'+L2
+
+        else:
+            return L1+'\n'+L2
 
     def rarity(self):
-        return self.s.find('span',{'title':'Platinum Rarity'}).get_text(' ', strip=True)
+        if self.c == True:
+            return self.s.find('span',{'title':'Completion Rate'}).get_text(' ', strip=True)
+
+        if self.c == False:
+            return self.s.find('span',{'title':'Platinum Rarity'}).get_text(' ', strip=True)
 
 class TrophiesInfo():
     """Analysing trophies page"""
@@ -245,3 +263,20 @@ class HowLongInfo():
 
         X = BeautifulSoup(X, 'html5lib').get_text('', strip=True).replace('[','').replace(']','')
         return X
+
+class PSStoreInfo():
+
+    def __init__(self, soup):
+        self.s = soup
+
+    def url(self):
+        return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[0].a['href']
+
+    def image(self):
+        return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[0]['src']
+
+    def url_2(self):
+        return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[1].a['href']
+
+    def image_2(self):
+        return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[1]['src']

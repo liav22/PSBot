@@ -31,13 +31,28 @@ async def on_message(message):
             Search Prices: `{p}price Game` | Shortcut: `{p}p`
             Search Trophies: `{p}trophy Game` | Shortcut: `{p}t`
             Search Scores: `{p}meta Game` | Shortcut: `{p}m`
-            Search Length: `{p}hltb Game` | Shortcut `{p}h`""".format(p=P), inline=False)
+            Search Length: `{p}hltb Game` | Shortcut `{p}h`
+            Search Deals: `{p}deals`""".format(p=P), inline=False)
         embed.add_field(name='User Specific Commands:', value="""
             Registration: `{p}register PSN`
             Show My Profile: `{p}u`
             Unregister: `{p}unregister`
+            Update My Profile: `{p}update`
             My Last Platinum: `{p}mlp`""".format(p=P), inline=False)
         embed.set_author(name='Playstation Network Bot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+        embed.set_footer(text='© Made by Liav22')
+        await message.channel.send(embed=embed)
+
+    if message.content.lower() == P+'changelog' or message.content.lower() == P+'h':
+        embed = discord.Embed(colour=0x1e90ff)
+        embed.add_field(name='New features:', value="""
+            - Search Deals: `{p}deals`
+            - Update My Profile: `{p}update`
+            - Added Battle Royale mode""".format(p=P), inline=False)
+        embed.add_field(name='General:', value="""
+            - Fixed `~price` command to showing non US PSN results
+            - Fixed `~meta` command not showing results""".format(p=P), inline=False)
+        embed.set_author(name='Update 14/02/2020 (BETA)', url='https://github.com/liav22/PSBot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
@@ -97,7 +112,7 @@ async def on_message(message):
 
                 a = PlatinumInfo(soup, game)
                 embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
-                embed.set_author(name=a.name() + "'s last Platinum Trophy", url=url, icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
+                embed.set_author(name=a.name() + "'s last Platinum Trophy", url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
                 embed.set_thumbnail(url=a.image())
                 embed.set_footer(text='by PSNProfiles.com')
                 await message.channel.send(embed=embed)
@@ -108,6 +123,16 @@ async def on_message(message):
         except AttributeError:
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+
+    if message.content.lower() == (P+'update'):
+        if search_user(message.author.id, message.guild.id) == True:
+                user = lookup_user(message.author.id, message.guild.id)
+                embed = discord.Embed(title='Click here to update your profile!', url=f'https://psnprofiles.com/?psnId={user}', colour=0x1e90ff)
+                embed.set_author(name=f'Welcome back, {user}', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+                await message.channel.send(embed=embed)
+
+        elif search_user(message.author.id, message.guild.id) == False:
+                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
 
     if message.content.lower().startswith(P+'u ') or message.content.lower().startswith(P+'user '):
         if message.content.lower().startswith(P+'u '):
@@ -169,7 +194,7 @@ async def on_message(message):
             game = message.content[7::]
 
         try:
-            soup = get_web_page_google('site:psprices.com ps4 ', game)
+            soup = get_web_page_google('site:psprices.com/region-us ps4 ', game)
 
             if soup == None:
                 raise NoResultsFound(game)
@@ -208,7 +233,7 @@ async def on_message(message):
             if soup == None:
                 raise NoResultsFound(game)
 
-            if 'Critic Reviews' not in str(soup.find('div', {'class':'content_nav'}).a):
+            if 'Metacritic Game Reviews' not in str(soup):
                 raise NoResultsFound(game)
 
             a = MetaInfo(soup)
@@ -265,6 +290,31 @@ async def on_message(message):
         except AttributeError:
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+
+    if message.content.lower() == (P+'deals'):
+        soup = get_any_webpage('https://store.playstation.com/en-us/home/games')
+        a = PSStoreInfo(soup)
+        embed = discord.Embed(colour=0x1e90ff)
+        embed.set_author(name='Current Featured Deals', url=a.url(), icon_url='https://i.imgur.com/ivD9PE0.png')
+        embed.set_image(url=a.image())
+        embed.set_footer(text='by PlayStation Store')
+        msg = await message.channel.send(embed=embed)
+        await msg.add_reaction('▶')
+
+        def check(reaction, user):
+            return user == message.author and str(reaction.emoji) == '▶'
+
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=5.0, check=check)
+        except asyncio.TimeoutError:
+            await msg.remove_reaction('▶', client.user)
+        else:
+            embed = discord.Embed(colour=0x1e90ff)
+            embed.set_author(name='Current Featured Deals', url=a.url_2(), icon_url='https://i.imgur.com/ivD9PE0.png')
+            embed.set_image(url=a.image_2())
+            embed.set_footer(text='by PlayStation Store')
+            await msg.edit(embed=embed)
+
 
     if message.content.lower() == P+'restart' and message.author.id == int(config.owner):
         print(f'[{datetime.datetime.now()}] Initiating full restart as requested by bot owner...\n')
