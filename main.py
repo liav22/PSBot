@@ -26,24 +26,27 @@ async def on_message(message):
 
     if message.content.lower() == P+'help' or message.content.lower() == P+'h':
         embed = discord.Embed(title='Source code', url='https://github.com/liav22/PSBot', colour=0x1e90ff)
+        embed.add_field(name='Information:', value="""
+            Command list: `{p}help` | Shortcut `~h`
+            Changelog: `{p}changelog` | Shortcut `{p}log`""".format(p=P), inline=False)
         embed.add_field(name='General Commands:', value="""
-            Search Profile: `{p}user PSN` | Shortcut: `{p}u`
-            Search Prices: `{p}price Game` | Shortcut: `{p}p`
-            Search Trophies: `{p}trophy Game` | Shortcut: `{p}t`
-            Search Scores: `{p}meta Game` | Shortcut: `{p}m`
-            Search Length: `{p}hltb Game` | Shortcut `{p}h`
-            Search Deals: `{p}deals`""".format(p=P), inline=False)
+            Search profile: `{p}user PSN` | Shortcut: `{p}u`
+            Search prices: `{p}price Game` | Shortcut: `{p}p`
+            Search trophies: `{p}trophy Game` | Shortcut: `{p}t`
+            Search scores: `{p}meta Game` | Shortcut: `{p}m`
+            Search length: `{p}hltb Game` | Shortcut `{p}h`
+            Search deals: `{p}deals` | Press ▶ to skip slide""".format(p=P), inline=False)
         embed.add_field(name='User Specific Commands:', value="""
             Registration: `{p}register PSN`
-            Show My Profile: `{p}u`
+            Show my profile: `{p}u`
             Unregister: `{p}unregister`
-            Update My Profile: `{p}update`
-            My Last Platinum: `{p}mlp`""".format(p=P), inline=False)
+            Update my profile: `{p}update`
+            My last platinum: `{p}mlp`""".format(p=P), inline=False)
         embed.set_author(name='Playstation Network Bot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
-    if message.content.lower() == P+'changelog' or message.content.lower() == P+'h':
+    if message.content.lower() == P+'changelog' or message.content.lower() == P+'log':
         embed = discord.Embed(colour=0x1e90ff)
         embed.add_field(name='New features:', value="""
             - Search Deals: `{p}deals`
@@ -57,9 +60,12 @@ async def on_message(message):
         await message.channel.send(embed=embed)
 
     if message.content.lower().startswith(P+'register '):
-
-        if message.guild is None:
-            await error_message(message.channel, 'Registration is only possible on servers.', 'Try using on a server where the bot is present.', '001')
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
 
         if search_user(message.author.id, message.guild.id) == False:
             register_new_user(message.author.id,message.content[10::], message.guild.id)
@@ -72,6 +78,13 @@ async def on_message(message):
         await error_message(message.channel, 'No username inserted.', 'Try `~register [USERNAME]`', '003')
 
     if message.content.lower() == P+'unregister':
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
         if search_user(message.author.id, message.guild.id) == True:
             remove_user(message.author.id, message.guild.id)
             await message.channel.send(f'<@{message.author.id}> removed successfully.')
@@ -79,6 +92,13 @@ async def on_message(message):
             await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '004')
 
     if message.content.lower() == (P+'u'):
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
         if search_user(message.author.id, message.guild.id) == True:
             try:
                 url = 'https://psnprofiles.com/' + lookup_user(message.author.id, message.guild.id)
@@ -97,6 +117,13 @@ async def on_message(message):
             await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
 
     if message.content.lower() == (P+'mlp') or message.content.lower() == (P+'mylastplatinum'):
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
         try:
             if search_user(message.author.id, message.guild.id) == True:
                 user = lookup_user(message.author.id, message.guild.id)
@@ -125,6 +152,13 @@ async def on_message(message):
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
     if message.content.lower() == (P+'update'):
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
         if search_user(message.author.id, message.guild.id) == True:
                 user = lookup_user(message.author.id, message.guild.id)
                 embed = discord.Embed(title='Click here to update your profile!', url=f'https://psnprofiles.com/?psnId={user}', colour=0x1e90ff)
@@ -292,30 +326,48 @@ async def on_message(message):
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
     if message.content.lower() == (P+'deals'):
+        try:
+            if message.guild is None:
+                raise CommandUnusable(game)
+
+        except:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
         soup = get_any_webpage('https://store.playstation.com/en-us/home/games')
         a = PSStoreInfo(soup)
+        num = 0
         embed = discord.Embed(colour=0x1e90ff)
-        embed.set_author(name='Current Featured Deals', url=a.url(), icon_url='https://i.imgur.com/ivD9PE0.png')
-        embed.set_image(url=a.image())
+        embed.set_author(name='Current Featured Deals', url=a.url(num), icon_url='https://i.imgur.com/ivD9PE0.png')
+        embed.set_image(url=a.image(num))
         embed.set_footer(text='by PlayStation Store')
         msg = await message.channel.send(embed=embed)
         await msg.add_reaction('▶')
 
-        def check(reaction, user):
+        def check_reaction(reaction, user):
             return user == message.author and str(reaction.emoji) == '▶'
 
-        try:
-            reaction, user = await client.wait_for('reaction_add', timeout=5.0, check=check)
-        except asyncio.TimeoutError:
-            await msg.remove_reaction('▶', client.user)
-        else:
-            embed = discord.Embed(colour=0x1e90ff)
-            embed.set_author(name='Current Featured Deals', url=a.url_2(), icon_url='https://i.imgur.com/ivD9PE0.png')
-            embed.set_image(url=a.image_2())
-            embed.set_footer(text='by PlayStation Store')
-            await msg.edit(embed=embed)
+        while num != 4:
+            await msg.add_reaction('▶')
+            try:
+                reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check_reaction)
+            except asyncio.TimeoutError:
+                await msg.clear_reactions()
+                break
+            else:
+                num += 1
+                embed = discord.Embed(colour=0x1e90ff)
+                embed.set_author(name='Current Featured Deals', url=a.url(num), icon_url='https://i.imgur.com/ivD9PE0.png')
+                embed.set_image(url=a.image(num))
+                embed.set_footer(text='by PlayStation Store')
+                await msg.edit(embed=embed)
+                await msg.remove_reaction('▶', message.author)
 
+        if num == 4:
+            await msg.clear_reactions()
+            await msg.add_reaction('<:reggie:449983603871580171>')
 
+                
     if message.content.lower() == P+'restart' and message.author.id == int(config.owner):
         print(f'[{datetime.datetime.now()}] Initiating full restart as requested by bot owner...\n')
         os.execl(sys.executable, sys.executable, *sys.argv)

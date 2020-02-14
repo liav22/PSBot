@@ -13,6 +13,9 @@ AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTM
 class NoResultsFound(Exception):
     pass
 
+class CommandUnusable(Exception):
+    pass
+
 def get_web_page_google(*argv):
     """Gerneral Google search with whatever arguments"""
     query = str(argv)
@@ -202,8 +205,11 @@ class MetaInfo():
     def __init__(self, soup):
         self.s = soup
 
-    def chech_result(self):
-        return type(self.s)
+        try:
+            int(self.s.find('a',{'class':'metascore_anchor'}).get_text(strip=True))
+
+        except ValueError:
+            raise NoResultsFound()
 
     def title(self):
         return self.s.find('div',{'class':'product_title'}).h1.get_text(strip=True)
@@ -269,14 +275,8 @@ class PSStoreInfo():
     def __init__(self, soup):
         self.s = soup
 
-    def url(self):
-        return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[0].a['href']
+    def url(self, num):
+        return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']
 
-    def image(self):
-        return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[0]['src']
-
-    def url_2(self):
-        return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[1].a['href']
-
-    def image_2(self):
-        return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[1]['src']
+    def image(self, num):
+        return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[num]['src']
