@@ -6,7 +6,7 @@
 ## Features
 * Searches for trophy lists, game sales, scores and lengths utilizing Google Search for maximum accuracy.
 * Allows users to register and become recognized by the bot.
-* Handles errors like a boss (mostly).
+* Error handling.
 
 ## Initialization
 1. [Download latest ZIP](https://github.com/liav22/PSBot/archive/master.zip) and exctract to any folder
