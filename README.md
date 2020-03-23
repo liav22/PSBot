@@ -24,5 +24,5 @@
 * Any unknown error (should only be AttributeError) will be printed to console / terminal.
 * User data is stored locally on `*.CSV` files in `userdata/`.
 
-## Demo
+## Preview
 ![](demo.gif)
