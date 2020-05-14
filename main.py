@@ -116,7 +116,7 @@ async def on_message(message):
         else:
             await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
 
-    if message.content.lower() == (P+'mlp') or message.content.lower() == (P+'mylastplatinum'):
+    if message.content.lower() == (P+'mlp') and "@" not in message.content or message.content.lower() == (P+'mylastplatinum') and "@" not in message.content:
         try: 
             if message.guild is None:
                 raise CommandUnusable()
@@ -151,6 +151,42 @@ async def on_message(message):
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
+    if message.content.lower().startswith(P+'mlp') and "@" in message.content:
+        user = message.mentions[0].id
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
+        try:
+            if search_user(user, message.guild.id) == True:
+                user_temp = lookup_user(user, message.guild.id)
+                url_temp = f'https://psnprofiles.com/{user_temp}/log?type=platinum'
+                soup_temp = get_any_webpage(url_temp)
+
+                if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
+                    await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', '000')
+
+                game = soup_temp.find('img', {'class':'game'})['title']
+                url = f'https://psnprofiles.com/{user_temp}'
+                soup = get_any_webpage(url)
+
+                a = PlatinumInfo(soup, game)
+                embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
+                embed.set_author(name=a.name() + "'s last Platinum Trophy", url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
+                embed.set_thumbnail(url=a.image())
+                embed.set_footer(text='by PSNProfiles.com')
+                await message.channel.send(embed=embed)
+
+            elif search_user(user, message.guild.id) == False:
+                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+
+        except AttributeError:
+            traceback.print_exc()
+            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+
     if message.content.lower() == (P+'update'):
         try: 
             if message.guild is None:
@@ -168,7 +204,34 @@ async def on_message(message):
         elif search_user(message.author.id, message.guild.id) == False:
                 await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
 
-    if message.content.lower().startswith(P+'u ') or message.content.lower().startswith(P+'user '):
+    if message.content.lower().startswith(P+'u') and '@' in message.content:
+        print(message.content)
+        user = message.mentions[0].id
+        try: 
+            if message.guild is None:
+                raise CommandUnusable()
+        except CommandUnusable:
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            return
+
+        if search_user(user, message.guild.id) == True:
+            try:
+                url = 'https://psnprofiles.com/' + lookup_user(user, message.guild.id)
+                soup = get_any_webpage(url)
+                a = UserInfo(soup)
+                embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
+                embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
+                embed.set_image(url=a.card())
+                embed.set_footer(text='by PSNProfiles.com')
+                await message.channel.send(embed=embed)
+
+            except AttributeError:
+                await error_message(message.channel, 'User not found on PSNProfiles.', 'Use `~unregister` and `~register [USERNAME]` again.', '005')
+                
+        if search_user(user, message.guild.id) == False:
+                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+
+    if message.content.lower().startswith(P+'u ') and '@' not in message.content or message.content.lower().startswith(P+'user ') and '@' not in message.content:
         if message.content.lower().startswith(P+'u '):
             url = 'https://psnprofiles.com/' + message.content[3::]
         if message.content.lower().startswith(P+'user '):
@@ -217,7 +280,7 @@ async def on_message(message):
             traceback.print_exc()
             await error_message_with_url(message.channel, 'Google or PSNProfiles are not cooperating.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '008')
 
-        except AttributeError:
+        except (AttributeError, UnicodeEncodeError):
             traceback.print_exc()
             await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
 
@@ -347,7 +410,7 @@ async def on_message(message):
         def check_reaction(reaction, user):
             return user == message.author and str(reaction.emoji) == '▶'
 
-        while num != 4:
+        while num < a.slides_count():
             await msg.add_reaction('▶')
             try:
                 reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check_reaction)
@@ -363,7 +426,7 @@ async def on_message(message):
                 await msg.edit(embed=embed)
                 await msg.remove_reaction('▶', message.author)
 
-        if num == 4:
+        if num == a.slides_count():
             await msg.clear_reactions()
             await msg.add_reaction('<:reggie:449983603871580171>')
 

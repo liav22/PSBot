@@ -174,17 +174,17 @@ class PriceInfo():
         return self.s.find('div', {'class':'col-md-9'}).find('h1').contents[0].strip()
     
     def store_url(self):
-        return self.s.find('div', {'class':'col-xs-12 col-sm-6'}).find('a')['href']
+        return self.s.find('div', {'class':'col-12 col-lg-6'}).find('a')['href']
 
     def price(self):
-        return self.s.find('div', {'class':'col-xs-12 col-sm-6'}).find('span',{'class':'current'}).get_text(strip=True)
+        return self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
 
     def plus_price(self):
         try:
-            A = self.s.find('div', {'class':'col-xs-12 col-sm-6'}).find('span',{'class':'plus'}).get_text(strip=True)
+            A = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
             return f' ({A})'
         except Exception:
-            return '' # In case there is no PLus Price
+            return '' # In case there is no Plus Price
     
     def lowest_price(self):
         return self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
@@ -275,8 +275,16 @@ class PSStoreInfo():
     def __init__(self, soup):
         self.s = soup
 
+    def slides_count(self):
+        X = str(self.s.find('div', {'class':'slideshow-controls__pager'}))
+        return int(X.count('carousel-dots__nav-dot')) - 2
+
     def url(self, num):
-        return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']
+        if 'https' not in self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']:
+            return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']
+
+        else:
+            return self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']
 
     def image(self, num):
         return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[num]['src']
