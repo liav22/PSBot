@@ -18,6 +18,7 @@
    * Owner - Bot Owner's Discord ID (only needed for the `~restart` command).
 4. Launch `main.py` with Python 3.7.1 using your system's console / terminal
 5. Add bot to your server of choice by generating a OAuth2 URL from [Discord Developer Portal](https://discordapp.com/developers/applications/) with the "bot" option checked and open it in your browser.
+6. Make sure that the bot has "Manage Messages" premission enabled for the `deals` command to work.
 
 ## Usage
 * Type `help` (with set prefix) in any Discord channel (the bot needs basic premissions) to see the command list.
