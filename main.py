@@ -16,6 +16,10 @@ client = discord.Client()
 config = Config()
 P = config.prefix
 
+loading_embed = discord.Embed()
+loading_embed.set_image(url='https://i.ibb.co/Y49LpjD/Please-Stand-By.gif')
+loading_embed.set_author(name='Loading...', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -49,13 +53,10 @@ async def on_message(message):
     if message.content.lower() == P+'changelog' or message.content.lower() == P+'log':
         embed = discord.Embed(colour=0x1e90ff)
         embed.add_field(name='New features:', value="""
-            - Search Deals: `{p}deals`
-            - Update My Profile: `{p}update`
-            - Added Battle Royale mode""".format(p=P), inline=False)
+            - Added loading screen to commands that may take longer than 1 second.""".format(p=P), inline=False)
         embed.add_field(name='General:', value="""
-            - Fixed `~price` command to showing non US PSN results
-            - Fixed `~meta` command not showing results""".format(p=P), inline=False)
-        embed.set_author(name='Update 14/02/2020 (BETA)', url='https://github.com/liav22/PSBot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+            - General system stability improvements to enhance the user's experience.""".format(p=P), inline=False)
+        embed.set_author(name='Update 09/06/2020', url='https://github.com/liav22/PSBot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
@@ -64,7 +65,7 @@ async def on_message(message):
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
 
         if search_user(message.author.id, message.guild.id) == False:
@@ -72,17 +73,17 @@ async def on_message(message):
             await message.channel.send(f'<@{message.author.id}> registered successfully.')
 
         else:
-            await error_message(message.channel, 'User already registered.', 'Try `~u` or `~register`', '002')
+            await error_message(message.channel, 'User already registered.', 'Try `~u` or `~register`')
 
     if message.content.lower() == P+'register':
-        await error_message(message.channel, 'No username inserted.', 'Try `~register [USERNAME]`', '003')
+        await error_message(message.channel, 'No username inserted.', 'Try `~register [USERNAME]`')
 
     if message.content.lower() == P+'unregister':
         try: 
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
 
         if search_user(message.author.id, message.guild.id) == True:
@@ -92,12 +93,15 @@ async def on_message(message):
             await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '004')
 
     if message.content.lower() == (P+'u'):
+        t0 = time.time()
         try: 
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
+
+        msg = await message.channel.send(embed=loading_embed)
 
         if search_user(message.author.id, message.guild.id) == True:
             try:
@@ -107,22 +111,26 @@ async def on_message(message):
                 embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
                 embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
                 embed.set_image(url=a.card())
-                embed.set_footer(text='by PSNProfiles.com')
-                await message.channel.send(embed=embed)
+                t1 = time.time()
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                await msg.edit(embed=embed)
 
             except AttributeError:
-                await error_message(message.channel, 'User not found on PSNProfiles.', 'Use `~unregister` and `~register [USERNAME]` again.', '005')
+                await error_message(message.channel, 'User not found on PSNProfiles.', 'Use `~unregister` and `~register [USERNAME]` again.', msg)
 
         else:
-            await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+            await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`')
 
     if message.content.lower() == (P+'mlp') and "@" not in message.content or message.content.lower() == (P+'mylastplatinum') and "@" not in message.content:
+        t0 = time.time()
         try: 
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
+
+        msg = await message.channel.send(embed=loading_embed)
 
         try:
             if search_user(message.author.id, message.guild.id) == True:
@@ -131,7 +139,7 @@ async def on_message(message):
                 soup_temp = get_any_webpage(url_temp)
 
                 if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
-                    await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', '000')
+                    await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', msg)
 
                 game = soup_temp.find('img', {'class':'game'})['title']
                 url = f'https://psnprofiles.com/{user}'
@@ -141,24 +149,29 @@ async def on_message(message):
                 embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
                 embed.set_author(name=a.name() + "'s last Platinum Trophy", url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
                 embed.set_thumbnail(url=a.image())
-                embed.set_footer(text='by PSNProfiles.com')
-                await message.channel.send(embed=embed)
+                t1 = time.time()
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                await msg.edit(embed=embed)
 
             elif search_user(message.author.id, message.guild.id) == False:
-                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`')
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.")
 
     if message.content.lower().startswith(P+'mlp') and "@" in message.content:
+        t0 = time.time()
         user = message.mentions[0].id
+
         try: 
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
+
+        msg = await message.channel.send(embed=loading_embed)
 
         try:
             if search_user(user, message.guild.id) == True:
@@ -167,7 +180,7 @@ async def on_message(message):
                 soup_temp = get_any_webpage(url_temp)
 
                 if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
-                    await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', '000')
+                    await error_message_edit(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', msg)
 
                 game = soup_temp.find('img', {'class':'game'})['title']
                 url = f'https://psnprofiles.com/{user_temp}'
@@ -177,22 +190,23 @@ async def on_message(message):
                 embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
                 embed.set_author(name=a.name() + "'s last Platinum Trophy", url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
                 embed.set_thumbnail(url=a.image())
-                embed.set_footer(text='by PSNProfiles.com')
-                await message.channel.send(embed=embed)
+                t1 = time.time()
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                await msg.edit(embed=embed)
 
             elif search_user(user, message.guild.id) == False:
-                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+                await error_message_edit(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', msg)
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+            await error_message_edit(message.channel, "Unknown Error.", "Inform the bot's developer.", msg)
 
     if message.content.lower() == (P+'update'):
         try: 
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
 
         if search_user(message.author.id, message.guild.id) == True:
@@ -202,16 +216,18 @@ async def on_message(message):
                 await message.channel.send(embed=embed)
 
         elif search_user(message.author.id, message.guild.id) == False:
-                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`')
 
     if message.content.lower().startswith(P+'u') and '@' in message.content:
+        t0 = time.time()
         print(message.content)
         user = message.mentions[0].id
+        msg = await message.channel.send(embed=loading_embed)
         try: 
             if message.guild is None:
                 raise CommandUnusable()
         except CommandUnusable:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message_edit(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', msg)
             return
 
         if search_user(user, message.guild.id) == True:
@@ -222,14 +238,15 @@ async def on_message(message):
                 embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
                 embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
                 embed.set_image(url=a.card())
-                embed.set_footer(text='by PSNProfiles.com')
-                await message.channel.send(embed=embed)
+                t1 = time.time()
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                await msg.edit(embed=embed)
 
             except AttributeError:
-                await error_message(message.channel, 'User not found on PSNProfiles.', 'Use `~unregister` and `~register [USERNAME]` again.', '005')
+                await error_message_edit(message.channel, 'User not found on PSNProfiles.', 'Use `~unregister` and `~register [USERNAME]` again.', msg)
                 
         if search_user(user, message.guild.id) == False:
-                await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '006')
+                await error_message_edit(message.channel, 'User not registered.', 'Use `~register [USERNAME]`')
 
     if message.content.lower().startswith(P+'u ') and '@' not in message.content or message.content.lower().startswith(P+'user ') and '@' not in message.content:
         if message.content.lower().startswith(P+'u '):
@@ -238,23 +255,28 @@ async def on_message(message):
             url = 'https://psnprofiles.com/' + message.content[6::]
         soup = get_any_webpage(url)
 
+        msg = await message.channel.send(embed=loading_embed)
+
         try:
             a = UserInfo(soup)
             embed = discord.Embed(description=a.description(), colour=0x4BA0FF)
             embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
             embed.set_image(url=a.card())
             embed.set_footer(text='by PSNProfiles.com')
-            await message.channel.send(embed=embed)
+            await msg.edit(embed=embed)
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, 'User not found on PSNProfiles.', 'Check if you typed the name correctly.', '005')
+            await error_message_edit(message.channel, 'User not found on PSNProfiles.', 'Check if you typed the name correctly.', msg)
 
     if message.content.lower().startswith(P+'trophy ') or message.content.lower().startswith(P+'t '):
+        t0 = time.time()
         if message.content.lower().startswith(P+'t '):
             game = message.content[3::]
         if message.content.lower().startswith(P+'trophy '):
             game = message.content[8::]
+
+        msg = await message.channel.send(embed=loading_embed)
 
         try:
             soup = get_web_page_google(game, ' Trophies • PSNProfiles.com')
@@ -269,26 +291,30 @@ async def on_message(message):
             embed = discord.Embed(title=a.trophies()+a.comp(), description=a.guide(), colour=0x4BA0FF)
             embed.set_author(name=a.name(), url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/logo-round-160px.png')
             embed.set_image(url=a.image())
-            embed.set_footer(text='by PSNProfiles.com')
-            await message.channel.send(embed=embed)
+            t1 = time.time()
+            embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+            await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
-            await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '009')
+            await error_message_with_url_edit(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", msg)
 
         except urllib.error.HTTPError:
             traceback.print_exc()
-            await error_message_with_url(message.channel, 'Google or PSNProfiles are not cooperating.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", '008')
+            await error_message_with_url_edit(message.channel, 'Google or PSNProfiles are not cooperating.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", msg)
 
         except (AttributeError, UnicodeEncodeError):
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+            await error_message_edit(message.channel, "Unknown Error.", "Inform the bot's developer.", msg)
 
     if message.content.lower().startswith(P+'price ') or message.content.lower().startswith(P+'p '):
+        t0 = time.time()
         if message.content.lower().startswith(P+'p '):
             game = message.content[3::]
         if message.content.lower().startswith(P+'price '):
             game = message.content[7::]
+
+        msg = await message.channel.send(embed=loading_embed)
 
         try:
             soup = get_web_page_google('site:psprices.com/region-us ps4 ', game)
@@ -303,26 +329,30 @@ async def on_message(message):
             embed = discord.Embed(title='Current Price: ' + a.price() + a.plus_price(), description='Lowest Price: ' + a.lowest_price(), url=a.page_url(), colour=0x2200FF)
             embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
             embed.set_thumbnail(url=a.image())
-            embed.set_footer(text='by PSprices.com')
-            await message.channel.send(embed=embed)
+            t1 = time.time()
+            embed.set_footer(text=f'by PSprices.com | Load time: {str(t1-t0)[0:3]} seconds')
+            await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
-            await error_message_with_url(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '010')
+            await error_message_with_url_edit(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", msg)
 
         except urllib.error.HTTPError:
             traceback.print_exc()
-            await error_message_with_url(message.channel, 'Google or PSPrices are not cooperating.', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", '008')
+            await error_message_with_url_edit(message.channel, 'Google or PSPrices are not cooperating.', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", msg)
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+            await error_message_edit(message.channel, "Unknown Error.", "Inform the bot's developer.", msg)
 
     if message.content.lower().startswith(P+'meta ') or message.content.lower().startswith(P+'m '):
+        t0 = time.time()
         if message.content.lower().startswith(P+'m '):
             game = message.content[3::]
         if message.content.lower().startswith(P+'meta '):
             game = message.content[6::]
+
+        msg = await message.channel.send(embed=loading_embed)
 
         try:
             soup = get_web_page_google('site:metacritic.com/game ', game)
@@ -339,26 +369,30 @@ async def on_message(message):
             embed.add_field(name=a.worst_review_author(), value=a.worst_review_body(), inline=False)
             embed.set_author(name=a.title(), url=a.url(), icon_url='https://i.imgur.com/jpgFaHq.png')
             embed.set_thumbnail(url=a.image())
-            embed.set_footer(text='by Metacritic.com')
-            await message.channel.send(embed=embed)
+            t1 = time.time()
+            embed.set_footer(text=f'by Metacritic.com | Load time: {str(t1-t0)[0:3]} seconds')
+            await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
-            await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '011')
+            await error_message_with_url_edit(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", msg)
 
         except urllib.error.HTTPError:
             traceback.print_exc()
-            await error_message_with_url(message.channel, 'Google or Metacritic are not cooperating.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '008')
+            await error_message_with_url_edit(message.channel, 'Google or Metacritic are not cooperating.', 'Press the link to search manually.', f"https//www.metacritic.com/search/game/{game.replace(' ','+')}/results", msg)
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+            await error_message_edit(message.channel, "Unknown Error.", "Inform the bot's developer.", msg)
 
     if message.content.lower().startswith(P+'hltb ') or message.content.lower().startswith(P+'h '):
+        t0 = time.time()
         if message.content.lower().startswith(P+'h '):
             game = message.content[3::]
         if message.content.lower().startswith(P+'hltb '):
             game = message.content[6::]
+
+        msg = await message.channel.send(embed=loading_embed)
 
         try:
             soup = get_web_page_google('site:howlongtobeat.com ', game)
@@ -373,20 +407,21 @@ async def on_message(message):
             embed = discord.Embed(description=a.times(), colour=0x328ED)
             embed.set_author(name=a.title(), url=a.url(), icon_url='https://i.imgur.com/WjDVkDF.jpg')
             embed.set_thumbnail(url=a.image())
-            embed.set_footer(text='by HowLongToBeat.com')
-            await message.channel.send(embed=embed)
+            t1 = time.time()
+            embed.set_footer(text=f'by HowLongToBeat.com | Load time: {str(t1-t0)[0:3]} seconds')
+            await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
-            await error_message_with_url(message.channel, 'Game not found.', 'Press the link to search manually.', 'https://howlongtobeat.com/', '012')
+            await error_message_with_url_edit(message.channel, 'Game not found.', 'Press the link to search manually.', 'https://howlongtobeat.com/', msg)
 
         except urllib.error.HTTPError:
             traceback.print_exc()
-            await error_message_with_url(message.channel, 'Google or HowLongToBeat are not cooperating.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", '008')
+            await error_message_with_url_edit(message.channel, 'Google or HowLongToBeat are not cooperating.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", msg)
 
         except AttributeError:
             traceback.print_exc()
-            await error_message(message.channel, "Unknown Error.", "Inform the bot's developer.", '007')
+            await error_message_edit(message.channel, "Unknown Error.", "Inform the bot's developer.", msg)
 
     if message.content.lower() == (P+'deals'):
         try:
@@ -394,7 +429,7 @@ async def on_message(message):
                 raise CommandUnusable(game)
 
         except:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.', '001')
+            await error_message_edit(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
 
         soup = get_any_webpage('https://store.playstation.com/en-us/home/games')
@@ -436,17 +471,20 @@ async def on_message(message):
         os.execl(sys.executable, sys.executable, *sys.argv)
 
 @client.event
-async def error_message(channel, error, solution, code):
+async def error_message(channel, error, solution):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution)
     embed.set_author(name='RIP', icon_url='https://i.imgur.com/gs99PYz.png')
-    embed.set_footer(text='Error code: '+code)
     await channel.send(embed=embed)
 
-async def error_message_with_url(channel, error, solution, url, code):
+async def error_message_edit(channel, error, solution, msg):
+    embed = discord.Embed(title=error, description='SOLUTION: '+solution)
+    embed.set_author(name='RIP', icon_url='https://i.imgur.com/gs99PYz.png')
+    await msg.edit(embed=embed)
+
+async def error_message_with_url_edit(channel, error, solution, url, msg):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution, url=url)
     embed.set_author(name='RIP', icon_url='https://i.imgur.com/gs99PYz.png')
-    embed.set_footer(text='Error code: '+code)    
-    await channel.send(embed=embed)
+    await msg.edit(embed=embed)
 
 @client.event
 async def on_ready():

@@ -162,6 +162,8 @@ class TrophiesInfo():
     else:
         return page"""
 
+
+
 class PriceInfo():
     """Analysing game price page"""
     def __init__(self, soup):
