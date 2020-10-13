@@ -6,6 +6,7 @@ import time
 import datetime
 import traceback
 import os
+import subprocess
 
 from config import *
 from user import *
@@ -480,6 +481,7 @@ async def on_message(message):
 
     if message.content.lower() == P+'restart' and message.author.id == int(config.owner):
         print(f'[{datetime.datetime.now()}] Initiating full restart as requested by bot owner...\n')
+        popen('updater.bat').wait()
         os.execl(sys.executable, sys.executable, *sys.argv)
 
 async def error_message(channel, error, solution):
