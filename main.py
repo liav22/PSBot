@@ -39,7 +39,8 @@ async def on_message(message):
             Search trophies: `{p}trophy Game` | Shortcut: `{p}t`
             Search scores: `{p}meta Game` | Shortcut: `{p}m`
             Search length: `{p}hltb Game` | Shortcut `{p}h`
-            Search deals: `{p}deals` | Press ▶ to skip slide""".format(p=P), inline=False)
+            Search deals: `{p}deals` | Press ▶ to skip slide
+            Search news: `{p}news`""".format(p=P), inline=False)
         embed.add_field(name='User Specific Commands:', value="""
             Registration: `{p}register PSN`
             Show my profile: `{p}u`
@@ -52,11 +53,9 @@ async def on_message(message):
 
     if message.content.lower() == P+'changelog' or message.content.lower() == P+'log':
         embed = discord.Embed(colour=0x1e90ff)
-        embed.add_field(name='New features:', value="""
-            - Added loading screen to commands that may take longer than 1 second.""".format(p=P), inline=False)
-        embed.add_field(name='General:', value="""
-            - General system stability improvements to enhance the user's experience.""".format(p=P), inline=False)
-        embed.set_author(name='Update 09/06/2020', url='https://github.com/liav22/PSBot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+        embed.add_field(name='Changes:', value="""
+            - New command: `{p}news`""".format(p=P), inline=False)
+        embed.set_author(name='Update 21/07/2020', url='https://github.com/liav22/PSBot/commit/b5d147f47d5b67376857a76680da1ccb0d4a22b3', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
@@ -73,7 +72,7 @@ async def on_message(message):
             await message.channel.send(f'<@{message.author.id}> registered successfully.')
 
         else:
-            await error_message(message.channel, 'User already registered.', 'Try `~u` or `~register`')
+            await error_message(message.channel, 'User already registered.', 'Try `~u` or `~unregister`')
 
     if message.content.lower() == P+'register':
         await error_message(message.channel, 'No username inserted.', 'Try `~register [USERNAME]`')
@@ -112,7 +111,7 @@ async def on_message(message):
                 embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
                 embed.set_image(url=a.card())
                 t1 = time.time()
-                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:4]} seconds')
                 await msg.edit(embed=embed)
 
             except AttributeError:
@@ -135,26 +134,24 @@ async def on_message(message):
         try:
             if search_user(message.author.id, message.guild.id) == True:
                 user = lookup_user(message.author.id, message.guild.id)
-                url_temp = f'https://psnprofiles.com/{user}/log?type=platinum'
-                soup_temp = get_any_webpage(url_temp)
+                soup = get_any_webpage(f'https://psnprofiles.com/{user}')
 
-                if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
-                    await error_message(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', msg)
+                if soup.find(text='Latest Platinum') == None:
+                    raise NoResultsFound()
 
-                game = soup_temp.find('img', {'class':'game'})['title']
-                url = f'https://psnprofiles.com/{user}'
-                soup = get_any_webpage(url)
-
-                a = PlatinumInfo(soup, game)
+                a = PlatinumInfo(soup)
                 embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
                 embed.set_author(name=a.name() + "'s last Platinum Trophy", url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
                 embed.set_thumbnail(url=a.image())
                 t1 = time.time()
-                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:4]} seconds')
                 await msg.edit(embed=embed)
 
             elif search_user(message.author.id, message.guild.id) == False:
                 await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`')
+
+        except NoResultsFound:
+            await error_message_edit(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', msg)
 
         except AttributeError:
             traceback.print_exc()
@@ -175,27 +172,25 @@ async def on_message(message):
 
         try:
             if search_user(user, message.guild.id) == True:
-                user_temp = lookup_user(user, message.guild.id)
-                url_temp = f'https://psnprofiles.com/{user_temp}/log?type=platinum'
-                soup_temp = get_any_webpage(url_temp)
+                user = lookup_user(user, message.guild.id)
+                soup = get_any_webpage(f'https://psnprofiles.com/{user}')
 
-                if 'No trophies to show' in str(soup_temp.find('div',{'class':'box'})):
-                    await error_message_edit(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', msg)
+                if soup.find(text='Latest Platinum') == None:
+                    raise NoResultsFound()
 
-                game = soup_temp.find('img', {'class':'game'})['title']
-                url = f'https://psnprofiles.com/{user_temp}'
-                soup = get_any_webpage(url)
-
-                a = PlatinumInfo(soup, game)
+                a = PlatinumInfo(soup)
                 embed = discord.Embed(title = a.game() + ' • ' + a.rarity(),description=a.description(), color=0x057fcc)
                 embed.set_author(name=a.name() + "'s last Platinum Trophy", url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/40-platinum.png')
                 embed.set_thumbnail(url=a.image())
                 t1 = time.time()
-                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:4]} seconds')
                 await msg.edit(embed=embed)
 
             elif search_user(user, message.guild.id) == False:
                 await error_message_edit(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', msg)
+
+        except NoResultsFound:
+            await error_message_edit(message.channel, "User doesn't have any Platinum trophy!", 'Try getting some trophies scrub', msg)
 
         except AttributeError:
             traceback.print_exc()
@@ -220,7 +215,6 @@ async def on_message(message):
 
     if message.content.lower().startswith(P+'u') and '@' in message.content:
         t0 = time.time()
-        print(message.content)
         user = message.mentions[0].id
         msg = await message.channel.send(embed=loading_embed)
         try: 
@@ -239,14 +233,14 @@ async def on_message(message):
                 embed.set_author(name=a.name() + "'s Profile", url=url, icon_url=a.icon())
                 embed.set_image(url=a.card())
                 t1 = time.time()
-                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+                embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:4]} seconds')
                 await msg.edit(embed=embed)
 
             except AttributeError:
                 await error_message_edit(message.channel, 'User not found on PSNProfiles.', 'Use `~unregister` and `~register [USERNAME]` again.', msg)
                 
         if search_user(user, message.guild.id) == False:
-                await error_message_edit(message.channel, 'User not registered.', 'Use `~register [USERNAME]`')
+                await error_message_edit(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', msg)
 
     if message.content.lower().startswith(P+'u ') and '@' not in message.content or message.content.lower().startswith(P+'user ') and '@' not in message.content:
         if message.content.lower().startswith(P+'u '):
@@ -292,16 +286,16 @@ async def on_message(message):
             embed.set_author(name=a.name(), url=a.url(), icon_url='https://psnprofiles.com/lib/img/icons/logo-round-160px.png')
             embed.set_image(url=a.image())
             t1 = time.time()
-            embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:3]} seconds')
+            embed.set_footer(text=f'by PSNProfiles.com | Load time: {str(t1-t0)[0:4]} seconds')
             await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url_edit(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", msg)
 
-        except urllib.error.HTTPError:
+        except (urllib.error.HTTPError, urllib.error.URLError, discord.errors.HTTPException):
             traceback.print_exc()
-            await error_message_with_url_edit(message.channel, 'Google or PSNProfiles are not cooperating.', 'Press the link to search manually.', f"https://psnprofiles.com/search/games?q={game.replace(' ','+')}", msg)
+            await error_message_edit(message.channel, f"HTTP Error. Why would you even search for {game}?", 'Search for an actual game.', msg)
 
         except (AttributeError, UnicodeEncodeError):
             traceback.print_exc()
@@ -330,16 +324,16 @@ async def on_message(message):
             embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
             embed.set_thumbnail(url=a.image())
             t1 = time.time()
-            embed.set_footer(text=f'by PSprices.com | Load time: {str(t1-t0)[0:3]} seconds')
+            embed.set_footer(text=f'by PSprices.com | Load time: {str(t1-t0)[0:4]} seconds')
             await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url_edit(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", msg)
 
-        except urllib.error.HTTPError:
+        except (urllib.error.HTTPError, urllib.error.URLError, discord.errors.HTTPException):
             traceback.print_exc()
-            await error_message_with_url_edit(message.channel, 'Google or PSPrices are not cooperating.', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", msg)
+            await error_message_edit(message.channel, f"HTTP Error. Why would you even search for {game}?", 'Search for an actual game.', msg)
 
         except AttributeError:
             traceback.print_exc()
@@ -355,7 +349,7 @@ async def on_message(message):
         msg = await message.channel.send(embed=loading_embed)
 
         try:
-            soup = get_web_page_google('site:metacritic.com/game ', game)
+            soup = get_web_page_google(game, ' game Reviews - Metacritic')
 
             if soup == None:
                 raise NoResultsFound(game)
@@ -370,16 +364,16 @@ async def on_message(message):
             embed.set_author(name=a.title(), url=a.url(), icon_url='https://i.imgur.com/jpgFaHq.png')
             embed.set_thumbnail(url=a.image())
             t1 = time.time()
-            embed.set_footer(text=f'by Metacritic.com | Load time: {str(t1-t0)[0:3]} seconds')
+            embed.set_footer(text=f'by Metacritic.com | Load time: {str(t1-t0)[0:4]} seconds')
             await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url_edit(message.channel, 'Game not found.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", msg)
 
-        except urllib.error.HTTPError:
+        except (urllib.error.HTTPError, urllib.error.URLError, discord.errors.HTTPException):
             traceback.print_exc()
-            await error_message_with_url_edit(message.channel, 'Google or Metacritic are not cooperating.', 'Press the link to search manually.', f"https//www.metacritic.com/search/game/{game.replace(' ','+')}/results", msg)
+            await error_message_edit(message.channel, f"HTTP Error. Why would you even search for {game}?", 'Search for an actual game.', msg)
 
         except AttributeError:
             traceback.print_exc()
@@ -408,16 +402,16 @@ async def on_message(message):
             embed.set_author(name=a.title(), url=a.url(), icon_url='https://i.imgur.com/WjDVkDF.jpg')
             embed.set_thumbnail(url=a.image())
             t1 = time.time()
-            embed.set_footer(text=f'by HowLongToBeat.com | Load time: {str(t1-t0)[0:3]} seconds')
+            embed.set_footer(text=f'by HowLongToBeat.com | Load time: {str(t1-t0)[0:4]} seconds')
             await msg.edit(embed=embed)
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
             await error_message_with_url_edit(message.channel, 'Game not found.', 'Press the link to search manually.', 'https://howlongtobeat.com/', msg)
 
-        except urllib.error.HTTPError:
+        except (urllib.error.HTTPError, urllib.error.URLError, discord.errors.HTTPException):
             traceback.print_exc()
-            await error_message_with_url_edit(message.channel, 'Google or HowLongToBeat are not cooperating.', 'Press the link to search manually.', f"https://www.metacritic.com/search/game/{game.replace(' ','+')}/results", msg)
+            await error_message_edit(message.channel, f"HTTP Error. Why would you even search for {game}?", 'Search for an actual game.', msg)
 
         except AttributeError:
             traceback.print_exc()
@@ -429,7 +423,7 @@ async def on_message(message):
                 raise CommandUnusable(game)
 
         except:
-            await error_message_edit(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
+            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
 
         soup = get_any_webpage('https://store.playstation.com/en-us/home/games')
@@ -449,6 +443,7 @@ async def on_message(message):
             await msg.add_reaction('▶')
             try:
                 reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check_reaction)
+
             except asyncio.TimeoutError:
                 await msg.clear_reactions()
                 break
@@ -464,26 +459,42 @@ async def on_message(message):
         if num == a.slides_count():
             await msg.clear_reactions()
             await msg.add_reaction('<:reggie:449983603871580171>')
-
                 
+
+    if message.content.lower() == (P+'news'):
+        t0 = time.time()
+        msg = await message.channel.send(embed=loading_embed)
+
+        try:
+            soup = get_any_webpage('https://www.playstationtrophies.org/archive/gaming-news/1/')
+
+        except rllib.error.URLError:
+            await error_message_edit(message.channel, 'PlayStationTrophies.org is not responding.', 'Try again in a few minutes.', msg)
+
+        a = PSNews(soup)
+        embed = discord.Embed(description=a.all_news(), colour=0x1e90ff)
+        embed.set_author(name='Latest PlayStation News', icon_url='https://i.imgur.com/ZOEtCfF.png')
+        t1 = time.time()
+        embed.set_footer(text=f'by PlayStationTrophies.com | Load time: {str(t1-t0)[0:4]} seconds')
+        await msg.edit(embed=embed)
+
     if message.content.lower() == P+'restart' and message.author.id == int(config.owner):
         print(f'[{datetime.datetime.now()}] Initiating full restart as requested by bot owner...\n')
         os.execl(sys.executable, sys.executable, *sys.argv)
 
-@client.event
 async def error_message(channel, error, solution):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution)
-    embed.set_author(name='RIP', icon_url='https://i.imgur.com/gs99PYz.png')
+    embed.set_author(name='Error', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
     await channel.send(embed=embed)
 
 async def error_message_edit(channel, error, solution, msg):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution)
-    embed.set_author(name='RIP', icon_url='https://i.imgur.com/gs99PYz.png')
+    embed.set_author(name='Error', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
     await msg.edit(embed=embed)
 
 async def error_message_with_url_edit(channel, error, solution, url, msg):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution, url=url)
-    embed.set_author(name='RIP', icon_url='https://i.imgur.com/gs99PYz.png')
+    embed.set_author(name='Error', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
     await msg.edit(embed=embed)
 
 @client.event
@@ -501,6 +512,7 @@ if __name__ == "__main__":
 
         except BaseException:
             """In case there's no connection upon initial launch"""
+            traceback.print_exc()
             print(f'[{datetime.datetime.now()}] Login failed, attempting to reconnect in 60 seconds...\n')
             time.sleep(60)
             continue

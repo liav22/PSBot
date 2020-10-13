@@ -1,6 +1,7 @@
 import string
 import random
 import re
+import pyshorteners
 
 import urllib
 from urllib.request import urlopen, Request
@@ -9,6 +10,11 @@ from bs4 import BeautifulSoup
 from googlesearch import search
 
 AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+
+
+def link_shortener(url):
+    s = pyshorteners.Shortener()
+    return s.tinyurl.short(url)
 
 class NoResultsFound(Exception):
     pass
@@ -51,25 +57,21 @@ class UserInfo():
 
 class PlatinumInfo():
     """Analysing profile page"""
-    def __init__(self, soup, game):
-        self.s = soup
-        self.u = soup.find('div', {'class':'ellipsis'}).get_text(strip=True)
+    def __init__(self, soup):
+        self.g = soup.find(text='Latest Platinum').find_previous('a').get_text(strip='True')
+        self.s = soup.find('div', {'class':'box no-top-border'}).find(text=self.g).find_previous('tr',{'class':'platinum'})
+        self.u = soup.find('span',{'class':'username'}).get_text(strip=True)
         self.c = False
 
-        for item in self.s.find_all('tr',{'class':'platinum'}):
-            if str(item.find('a',{'class':'title'}).get_text(' ', strip=True)) == game:
-                self.s = item
-
-        if self.s.find('span',{'title':'Completion Rate'}) != None:
-            if self.s.find('span',{'title':'Completion Rate'})['class'][1] == 'earned':
-                self.c = True
+        if 'earned' in soup.find('div', {'class':'box no-top-border'}).find(text=self.g).find_next('span', {'class':'separator completion-status'}):
+            self.c = True
 
 
     def name(self):
         return self.u
 
     def game(self):
-        return self.s.find('a',{'class':'title'}).get_text(' ', strip=True)
+        return self.g
     
     def image(self):
         return self.s.img['src']
@@ -116,8 +118,11 @@ class TrophiesInfo():
     def comp(self): # The most complicated one since the completion is often displayed differently between games
         B = self.s.find('span', text='100% Completed').previous_sibling
         
-        if self.s.find('li', {'class':'icon-sprite platinum'}).get_text() == '1':
+        if self.s.find('li', {'class':'icon-sprite platinum'}).get_text() == '1' and self.s.find('span', text='Platinum Achievers') != None:
             A = self.s.find('span', text='Platinum Achievers').previous_sibling
+            
+        if self.s.find('li', {'class':'icon-sprite platinum'}).get_text() == '1' and self.s.find('span', text='Platinum Achievers') == None:
+            A = self.s.find('span', text='Platinum Achiever').previous_sibling
         
         if self.s.find('li', {'class':'icon-sprite platinum'}).get_text() == '0':
             A = '0'
@@ -161,8 +166,6 @@ class TrophiesInfo():
         return BeautifulSoup(urlopen(r2).read(), 'html5lib')
     else:
         return page"""
-
-
 
 class PriceInfo():
     """Analysing game price page"""
@@ -210,7 +213,7 @@ class MetaInfo():
         try:
             int(self.s.find('a',{'class':'metascore_anchor'}).get_text(strip=True))
 
-        except ValueError:
+        except (ValueError, AttributeError):
             raise NoResultsFound()
 
     def title(self):
@@ -232,13 +235,21 @@ class MetaInfo():
         return 'Best Review, by '+self.s.find('li',{'class':'review critic_review first_review'}).find('div',{'class':'source'}).get_text(strip=True)
 
     def best_review_body(self):
-        return '"'+self.s.find('li',{'class':'review critic_review first_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
+        x = '"'+self.s.find('li',{'class':'review critic_review first_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
+        if len(x) <= 400:
+            return x
+        if len(x) >= 400:
+            return ' '.join(x[:400+1].split(' ')[0:-1]) + '..."'
 
     def worst_review_author(self):
         return 'Worst Review, by '+self.s.find('li',{'class':'review critic_review last_review'}).find('div',{'class':'source'}).get_text(strip=True)
 
     def worst_review_body(self):
-        return '"'+self.s.find('li',{'class':'review critic_review last_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
+        x = '"'+self.s.find('li',{'class':'review critic_review last_review'}).find('div',{'class':'review_body'}).get_text(strip=True)+'"'
+        if len(x) <= 400:
+            return x
+        if len(x) >= 400:
+            return ' '.join(x[:400+1].split(' ')[0:-1]) + '..."'
 
     def color(self):
         X = int(self.s.find('a',{'class':'metascore_anchor'}).get_text(strip=True))
@@ -282,11 +293,30 @@ class PSStoreInfo():
         return int(X.count('carousel-dots__nav-dot')) - 2
 
     def url(self, num):
-        if 'https' not in self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']:
-            return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']
+        if 'https' not in self.s.find('div',{'class':'slideshow-banner'}).find_all('span')[num].a['href']:
+            return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner'}).find_all('span')[num].a['href']
 
         else:
-            return self.s.find('div',{'class':'slideshow-banner '}).find_all('span')[num].a['href']
+            return self.s.find('div',{'class':'slideshow-banner'}).find_all('span')[num].a['href']
 
     def image(self, num):
-        return self.s.find('div',{'class':'slideshow-banner '}).find_all('img')[num]['src']
+        return self.s.find('div',{'class':'slideshow-banner'}).find_all('img')[num]['src']
+
+class PSNews():
+
+    def __init__(self, soup):
+        self.s = soup.find('div',{'class':'bl_la_main'})
+
+    def all_news(self):
+        x = ''
+        count = 0
+        for item in self.s.find_all('div',{'class':'newsTitle'}):
+            x += '**● ' + item.get_text(strip=True) + '**'
+            x += '\n'
+            x += link_shortener('https://www.playstationtrophies.org' + item.a['href'])
+            x += '\n\n'
+            count += 1
+            if count == 5:
+                break
+        return x
+
