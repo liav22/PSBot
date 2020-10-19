@@ -317,6 +317,9 @@ async def on_message(message):
             if soup == None:
                 raise NoResultsFound(game)
 
+            if soup.find('div', {'class':'game-card--meta'}).itemprop != 'PS4':
+                raise NoResultsFound(game)
+
             if 'Price change history' not in str(soup.find('div', {'id':'price_history'})):
                 raise NoResultsFound(game)
 
