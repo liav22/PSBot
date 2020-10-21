@@ -218,11 +218,11 @@ class PriceInfo():
         if self.sale == 1:
             a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
             b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
-            return f'Current Price {a} | **Plus: {a}**'
+            return f'Current Price {b} | **Plus: {a}**'
 
         if self.sale == 0:
             a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
-            return f'Current Price: {a}'
+            return f'Current Price: {a} (Not on sale)'
     
     def lowest_price(self):
         return 'Lowest Price: ' + self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
