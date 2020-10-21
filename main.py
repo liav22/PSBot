@@ -324,7 +324,7 @@ async def on_message(message):
                 raise NoResultsFound(game)
 
             a = PriceInfo(soup)
-            embed = discord.Embed(title='Current Price: ' + a.price() + a.plus_price(), description='Lowest Price: ' + a.lowest_price(), url=a.page_url(), colour=0x2200FF)
+            embed = discord.Embed(title=a.price(), description=a.lowest_price(), url=a.page_url(), colour=0x2200FF)
             embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
             embed.set_thumbnail(url=a.image())
             t1 = time.time()

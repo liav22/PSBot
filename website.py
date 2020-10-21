@@ -171,7 +171,29 @@ class PriceInfo():
     """Analysing game price page"""
     def __init__(self, soup):
         self.s = soup
-    
+
+        """ Four options in which price is displayed:
+        0: No sale at all (NAL)
+        1: No sale but special price for Plus subscribers only (PLUS)
+        2: On sale with no Plus special price (SALE)
+        3: On sale with Plus special price (SP)
+        """
+        checklist = []
+        for item in soup.find('div', 'col-12 col-lg-6').a.find_all('span'):
+            checklist += (item.get('class'))
+
+        if 'old_price' in checklist and 'plus' in checklist:
+            self.sale = 3
+
+        if 'old_price' in checklist and 'plus' not in checklist:
+            self.sale = 2
+
+        if 'plus' in checklist and 'old_price' not in checklist:
+            self.sale = 1
+
+        if 'plus' not in checklist and 'old_price' not in checklist:
+            self.sale = 0
+
     def page_url(self):
         return self.s.find('meta', {'property':'og:url'})['content']
 
@@ -182,17 +204,28 @@ class PriceInfo():
         return self.s.find('div', {'class':'col-12 col-lg-6'}).find('a')['href']
 
     def price(self):
-        return self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+        if self.sale == 3:
+            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+            b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
+            c = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'old_price'}).get_text(strip=True)
+            return f'On sale: {a}, Plus: **{b}** (~~{c}~~)'
 
-    def plus_price(self):
-        try:
-            A = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
-            return f' ({A})'
-        except Exception:
-            return '' # In case there is no Plus Price
+        if self.sale == 2:
+            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+            b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'old_price'}).get_text(strip=True)
+            return f'On sale: {a} (~~{b}~~'
+
+        if self.sale == 1:
+            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
+            b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+            return f'On sale for Plus members: {a} (~~{b}~~)'
+
+        if self.sale == 0:
+            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+            return f'No sale currently: {a}'
     
     def lowest_price(self):
-        return self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
+        return 'Lowest price: ' + self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
 
     def image(self):
         return self.s.find('div', {'class':'content__game_card__cover'}).find('img')['data-src']
