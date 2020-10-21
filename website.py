@@ -208,24 +208,24 @@ class PriceInfo():
             a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
             b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
             c = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'old_price'}).get_text(strip=True)
-            return f'On sale: {a}, Plus: **{b}** (~~{c}~~)'
+            return f'On Sale: {a} | **Plus: {b}**  | ~~{c}~~'
 
         if self.sale == 2:
             a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
             b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'old_price'}).get_text(strip=True)
-            return f'On sale: {a} (~~{b}~~'
+            return f'On Sale: {a} | ~~{b}~~'
 
         if self.sale == 1:
             a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
             b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
-            return f'On sale for Plus members: {a} (~~{b}~~)'
+            return f'Current Price {a} | **Plus: {a}**'
 
         if self.sale == 0:
             a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
-            return f'No sale currently: {a}'
+            return f'Current Price: {a}'
     
     def lowest_price(self):
-        return 'Lowest price: ' + self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
+        return 'Lowest Price: ' + self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
 
     def image(self):
         return self.s.find('div', {'class':'content__game_card__cover'}).find('img')['data-src']
