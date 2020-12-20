@@ -92,12 +92,9 @@ async def on_message(message):
         else:
             await error_message(message.channel, 'User not registered.', 'Use `~register [USERNAME]`', '004')
 
-    if message.content.lower() == (P+'u'):
+    if message.content.lower() == (P+'u') or message.content.lower() == (P+'user'):
         t0 = time.time()
-        try: 
-            if message.guild is None:
-                raise CommandUnusable()
-        except CommandUnusable:
+        if message.guild is None:
             await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
             return
 
