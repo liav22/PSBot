@@ -174,61 +174,50 @@ class PriceInfo():
 
         """ Four options in which price is displayed:
         0: No sale at all (NAL)
-        1: No sale but special price for Plus subscribers only (PLUS)
-        2: On sale with no Plus special price (SALE)
-        3: On sale with Plus special price (SP)
+        1: On sale with plus special price (PLUS)
+        2: On sale with no plus special price (SALE)
         """
-        checklist = []
-        for item in soup.find('div', 'col-12 col-lg-6').a.find_all('span'):
-            checklist += (item.get('class'))
+        status = soup.find('td', {'class':'w-100'})
 
-        if 'old_price' in checklist and 'plus' in checklist:
-            self.sale = 3
-
-        if 'old_price' in checklist and 'plus' not in checklist:
+        if status.find('span', {'class':'old_price h5 mx-1'}) != None:
             self.sale = 2
 
-        if 'plus' in checklist and 'old_price' not in checklist:
+        elif status.find('span', {'class':'content__game_card__price_plus h5'}) != None:
             self.sale = 1
 
-        if 'plus' not in checklist and 'old_price' not in checklist:
+        else:
             self.sale = 0
 
     def page_url(self):
         return self.s.find('meta', {'property':'og:url'})['content']
 
     def title(self):
-        return self.s.find('div', {'class':'col-md-9'}).find('h1').contents[0].strip()
+        return self.s.find('div', {'class':'content__game__title d-block my-0'}).h2.get_text(strip=True)
     
     def store_url(self):
-        return self.s.find('div', {'class':'col-12 col-lg-6'}).find('a')['href']
+        return self.s.find('td', {'class':'w-100'}).find('a')['href']
 
     def price(self):
-        if self.sale == 3:
-            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
-            b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
-            c = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'old_price'}).get_text(strip=True)
-            return f'On Sale: {a} | **Plus: {b}**  | ~~{c}~~'
 
         if self.sale == 2:
-            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
-            b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'old_price'}).get_text(strip=True)
+            a = self.s.find('td', {'class':'w-100'}).find('a').get_text(strip=True)
+            b = self.s.find('span', {'class':'old_price h5 mx-1'}).get_text(strip=True)
             return f'On Sale: {a} | ~~{b}~~'
 
         if self.sale == 1:
-            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'plus'}).get_text(strip=True)
-            b = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+            a = self.s.find('span', {'class':'content__game_card__price_plus h5'}).get_text(strip=True)
+            b = self.s.find('td', {'class':'w-100'}).find('a').get_text(strip=True)
             return f'Current Price {b} | **Plus: {a}**'
 
         if self.sale == 0:
-            a = self.s.find('div', {'class':'col-12 col-lg-6'}).find('span', {'class':'current'}).get_text(strip=True)
+            a = self.s.find('td', {'class':'w-100'}).find('a').get_text(strip=True)
             return f'Current Price: {a} (Not on sale)'
     
     def lowest_price(self):
         return 'Lowest Price: ' + self.s.find('div', {'id':'price_history'}).strong.next_sibling.next_sibling.get_text(strip=True)
 
     def image(self):
-        return self.s.find('div', {'class':'content__game_card__cover'}).find('img')['data-src']
+        return self.s.find('div', {'class':'d-flex force-scroll game--media'}).a['href']
 
 """    SEARCH THROUGH METACRITIC DIRECTLY:
     url = 'https://www.metacritic.com/search/game/{}/results'.format(game.replace(' ','+'))
