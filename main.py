@@ -54,7 +54,9 @@ async def on_message(message):
     if message.content.lower() == P+'changelog' or message.content.lower() == P+'log':
         embed = discord.Embed(colour=0x1e90ff)
         embed.add_field(name='Changes:', value="""
-            - Removed command: `~deals`""".format(p=P), inline=False)
+            - Removed command: `~deals`
+            - Fixed command: `~price` | `~p`
+            - Added support for searching PS5 games""".format(p=P), inline=False)
         embed.set_author(name='Update 07/01/2020', url='https://github.com/liav22/PSBot/commit/b5d147f47d5b67376857a76680da1ccb0d4a22b3', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
@@ -313,7 +315,7 @@ async def on_message(message):
             if soup == None:
                 raise NoResultsFound(game)
 
-            if soup.find('div', {'class':'game-card--meta'}).span['content'] not in ('PS4', 'PS3', 'PSVita'):
+            if soup.find('div', {'class':'game-card--meta'}).span['content'] not in ('PS5', 'PS4', 'PS3', 'PSVita'):
                 raise NoResultsFound(game)
 
             if 'Price change history' not in str(soup.find('div', {'id':'price_history'})):
@@ -329,7 +331,7 @@ async def on_message(message):
 
         except NoResultsFound:
             print(f'[{datetime.datetime.now()}] User {message.author.id} searched the following with no results: {game}')
-            await error_message_with_url_edit(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show&platform=PS4", msg)
+            await error_message_with_url_edit(message.channel, 'Game not found!', 'Press the link to search manually.', f"https://psprices.com/region-us/search/?q={game.replace(' ','+')}&dlc=show", msg)
 
         except (urllib.error.HTTPError, urllib.error.URLError, discord.errors.HTTPException):
             traceback.print_exc()
