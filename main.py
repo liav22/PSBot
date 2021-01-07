@@ -19,7 +19,7 @@ P = config.prefix
 
 loading_embed = discord.Embed()
 loading_embed.set_image(url='https://i.ibb.co/Y49LpjD/Please-Stand-By.gif')
-loading_embed.set_author(name='Loading...', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+loading_embed.set_author(name='Loading...', icon_url='https://i.imgur.com/7ZCQIPZ.png')
 
 @client.event
 async def on_message(message):
@@ -47,7 +47,7 @@ async def on_message(message):
             Unregister: `{p}unregister`
             Update my profile: `{p}update`
             My last platinum: `{p}mlp`""".format(p=P), inline=False)
-        embed.set_author(name='Playstation Network Bot', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+        embed.set_author(name='Playstation Network Bot', icon_url='https://i.imgur.com/7ZCQIPZ.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
@@ -57,7 +57,7 @@ async def on_message(message):
             - Removed command: `~deals`
             - Fixed command: `~price` | `~p`
             - Added support for searching PS5 games""".format(p=P), inline=False)
-        embed.set_author(name='Update 07/01/2020', url='https://github.com/liav22/PSBot/commit/b5d147f47d5b67376857a76680da1ccb0d4a22b3', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+        embed.set_author(name='Update 07/01/2020', url='https://github.com/liav22/PSBot/commit/master', icon_url='https://i.imgur.com/7ZCQIPZ.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
@@ -206,7 +206,7 @@ async def on_message(message):
         if search_user(message.author.id, message.guild.id) == True:
                 user = lookup_user(message.author.id, message.guild.id)
                 embed = discord.Embed(title='Click here to update your profile!', url=f'https://psnprofiles.com/?psnId={user}', colour=0x1e90ff)
-                embed.set_author(name=f'Welcome back, {user}', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+                embed.set_author(name=f'Welcome back, {user}', icon_url='https://i.imgur.com/7ZCQIPZ.png')
                 await message.channel.send(embed=embed)
 
         elif search_user(message.author.id, message.guild.id) == False:
@@ -323,7 +323,7 @@ async def on_message(message):
 
             a = PriceInfo(soup)
             embed = discord.Embed(title=a.price(), description=a.lowest_price(), url=a.page_url(), colour=0x2200FF)
-            embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://psprices.com/staticfiles/i/content__game_card__price_plus.bccff0c297cd.png')
+            embed.set_author(name=a.title(), url=a.store_url(), icon_url='https://i.imgur.com/68pmWnl.png')
             embed.set_thumbnail(url=a.image())
             t1 = time.time()
             embed.set_footer(text=f'by PSprices.com | Load time: {str(t1-t0)[0:4]} seconds')
@@ -488,17 +488,17 @@ async def on_message(message):
 
 async def error_message(channel, error, solution):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution)
-    embed.set_author(name='Error', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+    embed.set_author(name='Error', icon_url='https://i.imgur.com/bVknGVV.png')
     await channel.send(embed=embed)
 
 async def error_message_edit(channel, error, solution, msg):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution)
-    embed.set_author(name='Error', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+    embed.set_author(name='Error', icon_url='https://i.imgur.com/bVknGVV.png')
     await msg.edit(embed=embed)
 
 async def error_message_with_url_edit(channel, error, solution, url, msg):
     embed = discord.Embed(title=error, description='SOLUTION: '+solution, url=url)
-    embed.set_author(name='Error', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+    embed.set_author(name='Error', icon_url='https://i.imgur.com/bVknGVV.png')
     await msg.edit(embed=embed)
 
 @client.event
