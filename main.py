@@ -308,7 +308,7 @@ async def on_message(message):
         msg = await message.channel.send(embed=loading_embed)
 
         try:
-            soup = get_web_page_google('site:psprices.com/region-us ps4 ', game)
+            soup = get_web_page_google('site:psprices.com/region-us ps4 ps5 ', game)
 
             if soup == None:
                 raise NoResultsFound(game)
