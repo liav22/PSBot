@@ -54,7 +54,7 @@ async def on_message(message):
     if message.content.lower() == P+'changelog' or message.content.lower() == P+'log':
         embed = discord.Embed(colour=0x1e90ff)
         embed.add_field(name='Changes:', value="""
-            - Removed command: `~deals~""".format(p=P), inline=False)
+            - Removed command: `~deals`""".format(p=P), inline=False)
         embed.set_author(name='Update 07/01/2020', url='https://github.com/liav22/PSBot/commit/b5d147f47d5b67376857a76680da1ccb0d4a22b3', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
