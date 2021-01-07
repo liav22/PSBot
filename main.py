@@ -40,7 +40,6 @@ async def on_message(message):
             Search trophies: `{p}trophy Game` | Shortcut: `{p}t`
             Search scores: `{p}meta Game` | Shortcut: `{p}m`
             Search length: `{p}hltb Game` | Shortcut `{p}h`
-            Search deals: `{p}deals` | Press ▶ to skip slide
             Search news: `{p}news`""".format(p=P), inline=False)
         embed.add_field(name='User Specific Commands:', value="""
             Registration: `{p}register PSN`
@@ -55,8 +54,8 @@ async def on_message(message):
     if message.content.lower() == P+'changelog' or message.content.lower() == P+'log':
         embed = discord.Embed(colour=0x1e90ff)
         embed.add_field(name='Changes:', value="""
-            - New command: `{p}news`""".format(p=P), inline=False)
-        embed.set_author(name='Update 21/07/2020', url='https://github.com/liav22/PSBot/commit/b5d147f47d5b67376857a76680da1ccb0d4a22b3', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
+            - Removed command: `~deals~""".format(p=P), inline=False)
+        embed.set_author(name='Update 07/01/2020', url='https://github.com/liav22/PSBot/commit/b5d147f47d5b67376857a76680da1ccb0d4a22b3', icon_url='https://www.playstation.com/en-gb/1.36.45/etc/designs/pdc/clientlibs_base/images/nav/avatar-default-2x.png')
         embed.set_footer(text='© Made by Liav22')
         await message.channel.send(embed=embed)
 
@@ -418,48 +417,48 @@ async def on_message(message):
             traceback.print_exc()
             await error_message_edit(message.channel, "Unknown Error.", "Inform the bot's developer.", msg)
 
-    if message.content.lower() == (P+'deals'):
-        try:
-            if message.guild is None:
-                raise CommandUnusable(game)
+    # if message.content.lower() == (P+'deals'):
+    #     try:
+    #         if message.guild is None:
+    #             raise CommandUnusable(game)
 
-        except:
-            await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
-            return
+    #     except:
+    #         await error_message(message.channel, 'This command is only useable in servers.', 'Try using this in a server where the bot is present.')
+    #         return
 
-        soup = get_any_webpage('https://store.playstation.com/en-us/home/games')
-        a = PSStoreInfo(soup)
-        num = 0
-        embed = discord.Embed(colour=0x1e90ff)
-        embed.set_author(name='Current Featured Deals', url=a.url(num), icon_url='https://i.imgur.com/ivD9PE0.png')
-        embed.set_image(url=a.image(num))
-        embed.set_footer(text='by PlayStation Store')
-        msg = await message.channel.send(embed=embed)
-        await msg.add_reaction('▶')
+    #     soup = get_any_webpage('https://store.playstation.com/en-us/home/games')
+    #     a = PSStoreInfo(soup)
+    #     num = 0
+    #     embed = discord.Embed(colour=0x1e90ff)
+    #     embed.set_author(name='Current Featured Deals', url=a.url(num), icon_url='https://i.imgur.com/ivD9PE0.png')
+    #     embed.set_image(url=a.image(num))
+    #     embed.set_footer(text='by PlayStation Store')
+    #     msg = await message.channel.send(embed=embed)
+    #     await msg.add_reaction('▶')
 
-        def check_reaction(reaction, user):
-            return user == message.author and str(reaction.emoji) == '▶'
+    #     def check_reaction(reaction, user):
+    #         return user == message.author and str(reaction.emoji) == '▶'
 
-        while num < a.slides_count():
-            await msg.add_reaction('▶')
-            try:
-                reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check_reaction)
+    #     while num < a.slides_count():
+    #         await msg.add_reaction('▶')
+    #         try:
+    #             reaction, user = await client.wait_for('reaction_add', timeout=10.0, check=check_reaction)
 
-            except asyncio.TimeoutError:
-                await msg.clear_reactions()
-                break
-            else:
-                num += 1
-                embed = discord.Embed(colour=0x1e90ff)
-                embed.set_author(name='Current Featured Deals', url=a.url(num), icon_url='https://i.imgur.com/ivD9PE0.png')
-                embed.set_image(url=a.image(num))
-                embed.set_footer(text='by PlayStation Store')
-                await msg.edit(embed=embed)
-                await msg.remove_reaction('▶', message.author)
+    #         except asyncio.TimeoutError:
+    #             await msg.clear_reactions()
+    #             break
+    #         else:
+    #             num += 1
+    #             embed = discord.Embed(colour=0x1e90ff)
+    #             embed.set_author(name='Current Featured Deals', url=a.url(num), icon_url='https://i.imgur.com/ivD9PE0.png')
+    #             embed.set_image(url=a.image(num))
+    #             embed.set_footer(text='by PlayStation Store')
+    #             await msg.edit(embed=embed)
+    #             await msg.remove_reaction('▶', message.author)
 
-        if num == a.slides_count():
-            await msg.clear_reactions()
-            await msg.add_reaction('<:reggie:449983603871580171>')
+    #     if num == a.slides_count():
+    #         await msg.clear_reactions()
+    #         await msg.add_reaction('<:reggie:449983603871580171>')
                 
 
     if message.content.lower() == (P+'news'):

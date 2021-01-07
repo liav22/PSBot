@@ -173,16 +173,16 @@ class PriceInfo():
         self.s = soup
 
         """ Four options in which price is displayed:
-        0: No sale at all (NAL)
+        0: No sale at all (NULL)
         1: On sale with plus special price (PLUS)
         2: On sale with no plus special price (SALE)
         """
         status = soup.find('td', {'class':'w-100'})
 
-        if status.find('span', {'class':'old_price h5 mx-1'}) != None:
+        if status.find('span', {'class':'old_price h4 mx-1'}) != None:
             self.sale = 2
 
-        elif status.find('span', {'class':'content__game_card__price_plus h5'}) != None:
+        elif status.find('span', {'class':'content__game_card__price_plus h4'}) != None:
             self.sale = 1
 
         else:
@@ -195,17 +195,17 @@ class PriceInfo():
         return self.s.find('div', {'class':'content__game__title d-block my-0'}).h2.get_text(strip=True)
     
     def store_url(self):
-        return self.s.find('td', {'class':'w-100'}).find('a')['href']
+        return 'https://psprices.com' + self.s.find('td', {'class':'w-100'}).find('a')['href']
 
     def price(self):
 
         if self.sale == 2:
             a = self.s.find('td', {'class':'w-100'}).find('a').get_text(strip=True)
-            b = self.s.find('span', {'class':'old_price h5 mx-1'}).get_text(strip=True)
+            b = self.s.find('span', {'class':'old_price h4 mx-1'}).get_text(strip=True)
             return f'On Sale: {a} | ~~{b}~~'
 
         if self.sale == 1:
-            a = self.s.find('span', {'class':'content__game_card__price_plus h5'}).get_text(strip=True)
+            a = self.s.find('span', {'class':'content__game_card__price_plus h4'}).get_text(strip=True)
             b = self.s.find('td', {'class':'w-100'}).find('a').get_text(strip=True)
             return f'Current Price {b} | **Plus: {a}**'
 
@@ -304,25 +304,6 @@ class HowLongInfo():
 
         X = BeautifulSoup(X, 'html5lib').get_text('', strip=True).replace('[','').replace(']','')
         return X
-
-class PSStoreInfo():
-
-    def __init__(self, soup):
-        self.s = soup
-
-    def slides_count(self):
-        X = str(self.s.find('div', {'class':'slideshow-controls__pager'}))
-        return int(X.count('carousel-dots__nav-dot')) - 2
-
-    def url(self, num):
-        if 'https' not in self.s.find('div',{'class':'slideshow-banner'}).find_all('span')[num].a['href']:
-            return 'https://store.playstation.com' + self.s.find('div',{'class':'slideshow-banner'}).find_all('span')[num].a['href']
-
-        else:
-            return self.s.find('div',{'class':'slideshow-banner'}).find_all('span')[num].a['href']
-
-    def image(self, num):
-        return self.s.find('div',{'class':'slideshow-banner'}).find_all('img')[num]['src']
 
 class PSNews():
 
